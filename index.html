@@ -1090,7 +1090,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
               <div class="x-reveal">
                 <p class="x-reveal__word"><span lang="en" id="t-word"></span> · <span id="t-mean"></span></p>
                 <p class="x-reveal__tr" id="t-extr"></p>
-                <div class="x-hint" id="t-mn">
+                <button class="x-peek" id="t-peek" type="button" aria-expanded="false" aria-controls="t-mn">💡 İpucu</button>
+                <div class="x-hint" id="t-mn" hidden>
                   <p class="x-hint__label">💡 Hafıza ipucu</p>
                   <p class="x-hint__text" id="t-mn-text"></p>
                 </div>
@@ -1880,6 +1881,12 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           this.setAttribute("aria-expanded", String(open));
           this.textContent = open ? "💡 İpucunu gizle" : "💡 İpucu";
         });
+        $("t-peek").addEventListener("click", function () {
+          var open = $("t-mn").hidden;
+          $("t-mn").hidden = !open;
+          this.setAttribute("aria-expanded", String(open));
+          this.textContent = open ? "💡 İpucunu gizle" : "💡 İpucu";
+        });
         $("card").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target === this) { e.preventDefault(); reveal(); } });
         $("speak").addEventListener("click", function (e) { e.stopPropagation(); speak(); });
         $("rate").addEventListener("click", function (e) { var b = e.target.closest("[data-r]"); if (b) rate(+b.dataset.r); });
@@ -2054,7 +2061,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $("t-extr").textContent = c && c.exTr ? c.exTr : "";
           $("t-extr").hidden = !(c && c.exTr);
           $("t-mn-text").textContent = c && c.mn ? c.mn : "";
-          $("t-mn").hidden = !(c && c.mn);
+          $("t-mn").hidden = true;
+          $("t-peek").hidden = !(c && c.mn); $("t-peek").setAttribute("aria-expanded", "false"); $("t-peek").textContent = "💡 İpucu";
           $("t-reveal").hidden = false; $("t-next").hidden = false;
           $("t-next").textContent = T.i + 1 < T.qs.length ? "Sonraki" : "Sonucu gör";
           $("t-next").focus({ preventScroll: true });
