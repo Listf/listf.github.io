@@ -963,8 +963,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             </div>
             <div class="x-row"><span id="order-label">Yeni kart sırası</span></div>
             <div class="x-seg" role="group" aria-labelledby="order-label">
-              <button type="button" data-order="alpha" aria-pressed="true">Alfabetik (varsayılan)</button>
-              <button type="button" data-order="mix" aria-pressed="false">Karışık</button>
+              <button type="button" data-order="alpha" aria-pressed="false">Alfabetik</button>
+              <button type="button" data-order="mix" aria-pressed="true">Karışık (varsayılan)</button>
             </div>
           </div>
         </section>
@@ -1341,7 +1341,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           }
           return a.map(function (c) { return c.id; });
         }
-        function defaultState() { var cards = builtin(); return { cards: cards, order: mixedOrder(cards), settings: { newLimit: 20, dir: "en", newOrder: "alpha", orderChosen: false }, day: { date: dayKey(Date.now()), newDone: 0, extra: 0 } }; }
+        function defaultState() { var cards = builtin(); return { cards: cards, order: mixedOrder(cards), settings: { newLimit: 20, dir: "en", newOrder: "mix", orderChosen: false }, day: { date: dayKey(Date.now()), newDone: 0, extra: 0 } }; }
 
         function normalize(s) {
           if (Array.isArray(s)) s = { cards: s };
@@ -1377,8 +1377,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           if (s.settings) {
             if (s.settings.newLimit >= 0) out.settings.newLimit = Math.min(200, Math.round(s.settings.newLimit));
             if (s.settings.dir === "tr" || s.settings.dir === "en") out.settings.dir = s.settings.dir;
-            /* only an explicit choice overrides the alphabetical default */
-            if (s.settings.orderChosen === true && (s.settings.newOrder === "mix" || s.settings.newOrder === "alpha")) { out.settings.newOrder = s.settings.newOrder; out.settings.orderChosen = true; }
+            /* only an explicit choice made after the switch to the mixed default overrides it */
+            if (s.settings.orderChosen === true && s.settings.orderV2 === true && (s.settings.newOrder === "mix" || s.settings.newOrder === "alpha")) { out.settings.newOrder = s.settings.newOrder; out.settings.orderChosen = true; out.settings.orderV2 = true; }
             if (typeof s.settings.letter === "string" && /^[a-z]$/.test(s.settings.letter)) out.settings.letter = s.settings.letter;
           }
           if (!out.settings.letter && canStore) { try { var sl = localStorage.getItem(KEY + "-letter"); if (sl && /^[a-z]$/.test(sl)) out.settings.letter = sl; } catch (e) {} }
@@ -1567,7 +1567,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $("s-learned").textContent = k.learned; $("s-total").textContent = k.total;
           $("lim").textContent = state.settings.newLimit;
           [].forEach.call(document.querySelectorAll("[data-dir]"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.dir === state.settings.dir)); });
-          [].forEach.call(document.querySelectorAll("[data-order]"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.order === (state.settings.newOrder || "alpha"))); });
+          [].forEach.call(document.querySelectorAll("[data-order]"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.order === (state.settings.newOrder || "mix"))); });
           var none = k.due + k.newLeft === 0;
           $("start").disabled = none;
           $("start-note").hidden = !none;
@@ -1904,7 +1904,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           b.addEventListener("click", function () { state.settings.dir = b.dataset.dir; save(); renderHome(); });
         });
         [].forEach.call(document.querySelectorAll("[data-order]"), function (b) {
-          b.addEventListener("click", function () { state.settings.newOrder = b.dataset.order; state.settings.orderChosen = true; save(); renderHome(); });
+          b.addEventListener("click", function () { state.settings.newOrder = b.dataset.order; state.settings.orderChosen = true; state.settings.orderV2 = true; save(); renderHome(); });
         });
         $("letters").addEventListener("click", function (e) { var b = e.target.closest("[data-letter]"); if (b && !b.disabled) setLetter(b.dataset.letter); });
         [].forEach.call(document.querySelectorAll("[data-more]"), function (b) {
