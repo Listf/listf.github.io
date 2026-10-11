@@ -980,6 +980,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             <div class="x-studybar"><button class="x-undo" id="undo" type="button" disabled aria-label="Önceki karta dön ve puanı geri al">↶ Önceki</button></div>
             <div class="x-card" id="card" role="button" tabindex="0" aria-label="Kartı çevir">
               <p class="x-word" id="c-front" lang="en"></p>
+              <button class="x-peek" id="say" type="button" aria-label="Kelimeyi sesli oku">🔊 Dinle</button>
               <button class="x-peek" id="peek" type="button" aria-expanded="false" aria-controls="c-peek">💡 İpucu</button>
               <div class="x-hint" id="c-peek" hidden aria-live="polite">
                 <p class="x-hint__label">💡 Hafıza ipucu</p>
@@ -1657,6 +1658,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         function renderCard(c) {
           var en = state.settings.dir === "en";
           $("c-front").textContent = en ? c.en : c.tr;
+          $("say").hidden = !en; /* TR→EN: don't give the answer away before reveal */
           $("c-front").lang = en ? "en" : "tr";
           $("c-meaning").textContent = en ? c.tr : c.en;
           $("c-meaning").lang = en ? "tr" : "en";
@@ -1692,6 +1694,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           var c = byId(S.current), now = Date.now();
           for (var r = 0; r < 4; r++) $("i" + r).textContent = fmtNext(schedule(c, r, now), now);
           $("c-back").hidden = false; $("c-tap").hidden = true; $("card").classList.add("is-back");
+          $("say").hidden = false;
           $("card").removeAttribute("aria-label");
           $("show").hidden = true; $("rate").hidden = false; $("rate-front").hidden = true;
           $("rate").querySelector('[data-r="2"]').focus({ preventScroll: true });
@@ -1727,6 +1730,17 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
 
         /* ---------- speech ---------- */
         function stopSpeech() { try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
+        function sayWord() {
+          if (!S || !S.current) return;
+          if (!("speechSynthesis" in window)) { toast("Bu tarayıcı sesli okumayı desteklemiyor."); return; }
+          var c = byId(S.current);
+          if (!c || !c.en) return;
+          stopSpeech();
+          var voice = (speechSynthesis.getVoices() || []).filter(function (v) { return /^en[-_]US/i.test(v.lang); })[0];
+          var u = new SpeechSynthesisUtterance(c.en);
+          u.lang = "en-US"; u.rate = 0.85; if (voice) u.voice = voice;
+          speechSynthesis.speak(u);
+        }
         function speak() {
           if (!S || !S.current) return;
           if (!("speechSynthesis" in window)) { toast("Bu tarayıcı sesli okumayı desteklemiyor."); return; }
@@ -1873,7 +1887,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         $("undo").addEventListener("click", undo);
         $("done-undo").addEventListener("click", undo);
         updateUndo();
-        $("card").addEventListener("click", function (e) { if (!e.target.closest("#speak, #peek, #c-peek")) reveal(); });
+        $("card").addEventListener("click", function (e) { if (!e.target.closest("#speak, #peek, #c-peek, #say")) reveal(); });
         $("peek").addEventListener("click", function (e) {
           e.stopPropagation();
           var open = $("c-peek").hidden;
@@ -1889,6 +1903,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         });
         $("card").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target === this) { e.preventDefault(); reveal(); } });
         $("speak").addEventListener("click", function (e) { e.stopPropagation(); speak(); });
+        $("say").addEventListener("click", function (e) { e.stopPropagation(); sayWord(); });
         $("rate").addEventListener("click", function (e) { var b = e.target.closest("[data-r]"); if (b) rate(+b.dataset.r); });
         $("rate-front").addEventListener("click", function (e) { var b = e.target.closest("[data-r]"); if (b) rate(+b.dataset.r); });
         document.addEventListener("keydown", function (e) {
