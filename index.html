@@ -1665,7 +1665,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $("c-extr").textContent = c.exTr || "";
           $("c-extr").hidden = !c.ex || !c.exTr;
           $("c-mn-text").textContent = c.mn || "";
-          $("c-mn").hidden = !c.mn;
+          $("c-mn").hidden = true; /* hint only via 💡 button */
           $("c-peek-text").textContent = c.mn || "";
           $("c-peek").hidden = true;
           $("peek").hidden = !c.mn;
@@ -1691,7 +1691,6 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           var c = byId(S.current), now = Date.now();
           for (var r = 0; r < 4; r++) $("i" + r).textContent = fmtNext(schedule(c, r, now), now);
           $("c-back").hidden = false; $("c-tap").hidden = true; $("card").classList.add("is-back");
-          $("peek").hidden = true; $("c-peek").hidden = true;
           $("card").removeAttribute("aria-label");
           $("show").hidden = true; $("rate").hidden = false; $("rate-front").hidden = true;
           $("rate").querySelector('[data-r="2"]').focus({ preventScroll: true });
