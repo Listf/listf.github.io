@@ -840,6 +840,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
       .x-seg--3 { grid-template-columns: repeat(3, 1fr); }
       .x-q { display: grid; gap: 12px; padding: 22px 20px; border-radius: var(--r-l); background: var(--fill-tertiary); }
       .x-q__text { font: var(--type-body); font-size: var(--size-prose); line-height: 1.55; overflow-wrap: anywhere; }
+      .x-q__text--mean { font: var(--type-heading); font-size: clamp(24px, 6.5vw, 32px); text-align: center; padding: 8px 0; }
       .x-opts { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
       .x-opt {
         display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 10px 14px; text-align: left;
@@ -1053,11 +1054,16 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           <div id="t-setup" class="x-view">
             <div class="x-top">
               <div>
-                <p class="x-eyebrow">YDS tarzı boşluk doldurma</p>
+                <p class="x-eyebrow" id="t-eyebrow">YDS tarzı boşluk doldurma</p>
                 <h1 id="test-title">Test</h1>
               </div>
             </div>
             <div class="x-panel">
+              <h3>Test türü</h3>
+              <div class="x-seg" role="group" aria-label="Test türü">
+                <button type="button" data-tmode="cloze" aria-pressed="true">Cümle</button>
+                <button type="button" data-tmode="mean" aria-pressed="false">Anlam</button>
+              </div>
               <h3>Soru sayısı</h3>
               <div class="x-seg x-seg--3" role="group" aria-label="Soru sayısı">
                 <button type="button" data-tn="10" aria-pressed="true">10</button>
@@ -1997,7 +2003,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
         function isSeen(c) { return c.type !== "new" || c.reps > 0; }
         var LETTERS = ["A", "B", "C", "D", "E"];
-        var T = null, tOpts = { n: 10, src: "all" };
+        var T = null, tOpts = { n: 10, src: "all", mode: "cloze" };
+        function tUsable(c) { return tOpts.mode === "mean" ? !!(c.tr && baseForm(c.en)) : !!blankOf(c); }
 
         function testSetup() {
           T = null;
@@ -2005,7 +2012,9 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $("t-setup").hidden = false; $("t-run").hidden = true; $("t-end").hidden = true;
           [].forEach.call(document.querySelectorAll("[data-tn]"), function (b) { b.setAttribute("aria-pressed", String(+b.dataset.tn === tOpts.n)); });
           [].forEach.call(document.querySelectorAll("[data-tsrc]"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.tsrc === tOpts.src)); });
-          var seen = state.cards.filter(function (c) { return isSeen(c) && blankOf(c); }).length;
+          [].forEach.call(document.querySelectorAll("[data-tmode]"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.tmode === tOpts.mode)); });
+          $("t-eyebrow").textContent = tOpts.mode === "mean" ? "Türkçe anlam → İngilizce kelime" : "YDS tarzı boşluk doldurma";
+          var seen = state.cards.filter(function (c) { return isSeen(c) && tUsable(c); }).length;
           $("t-seen-note").textContent = "Çalıştığın kart: " + seen + (seen < 10 ? " · 10'dan az olduğu için “Çalıştığım kartlar” seçilirse tüm kartlar kullanılır." : "");
         }
         function distractors(c, answer) {
@@ -2025,7 +2034,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           return out;
         }
         function testStart() {
-          var all = state.cards.filter(function (c) { return blankOf(c); }), pool = all, note = "";
+          var all = state.cards.filter(tUsable), pool = all, note = "", mean = tOpts.mode === "mean";
           if (tOpts.src === "seen") {
             var seen = all.filter(isSeen);
             if (seen.length < 10) note = "Çalıştığın kart 10'dan az (" + seen.length + "); sorular tüm kartlardan.";
@@ -2033,8 +2042,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           }
           if (!pool.length) { toast("Test için uygun kart yok"); return; }
           var qs = shuffle(pool.slice()).slice(0, tOpts.n).map(function (c) {
-            var b = blankOf(c), opts = shuffle(distractors(c, b.ans).concat([b.ans]));
-            return { id: c.id, q: b.q, ans: b.ans, opts: opts, right: opts.indexOf(b.ans) };
+            var b = mean ? { q: c.tr, ans: baseForm(c.en) } : blankOf(c), opts = shuffle(distractors(c, b.ans).concat([b.ans]));
+            return { id: c.id, q: b.q, ans: b.ans, opts: opts, right: opts.indexOf(b.ans), mean: mean };
           });
           T = { qs: qs, i: 0, score: 0, missed: [], answered: false };
           document.body.classList.add("is-studying");
@@ -2048,9 +2057,11 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $("t-count").textContent = (T.i + 1) + "/" + n;
           var pct = Math.round((T.i / n) * 100);
           $("t-prog").style.width = pct + "%"; $("t-prog").parentNode.setAttribute("aria-valuenow", pct);
-          $("t-qnum").textContent = "Soru " + (T.i + 1);
+          $("t-qnum").textContent = "Soru " + (T.i + 1) + (q.mean ? " · İngilizcesi hangisi?" : "");
           closePop();
-          $("t-q").innerHTML = wordsHTML(q.q);
+          $("t-q").setAttribute("lang", q.mean ? "tr" : "en");
+          $("t-q").classList.toggle("x-q__text--mean", !!q.mean);
+          $("t-q").innerHTML = q.mean ? esc(q.q) : wordsHTML(q.q);
           $("t-opts").innerHTML = q.opts.map(function (o, k) {
             return '<li><button class="x-opt" type="button" data-o="' + k + '"><b>' + LETTERS[k] + ")</b><span>" + esc(o) + "</span></button></li>";
           }).join("");
@@ -2073,8 +2084,9 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           v.textContent = ok ? "✓ Doğru" : "✕ Yanlış · doğru cevap " + LETTERS[q.right] + ") " + q.ans;
           $("t-word").textContent = c ? c.en : q.ans;
           $("t-mean").textContent = c ? c.tr : "";
-          $("t-extr").textContent = c && c.exTr ? c.exTr : "";
-          $("t-extr").hidden = !(c && c.exTr);
+          var xt = q.mean ? (c && c.ex ? c.ex + (c.exTr ? " — " + c.exTr : "") : "") : (c && c.exTr ? c.exTr : "");
+          $("t-extr").textContent = xt;
+          $("t-extr").hidden = !xt;
           $("t-mn-text").textContent = c && c.mn ? c.mn : "";
           $("t-mn").hidden = true;
           $("t-peek").hidden = !(c && c.mn); $("t-peek").setAttribute("aria-expanded", "false"); $("t-peek").textContent = "💡 İpucu";
@@ -2117,6 +2129,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         }
         [].forEach.call(document.querySelectorAll("[data-tn]"), function (b) { b.addEventListener("click", function () { tOpts.n = +b.dataset.tn; testSetup(); }); });
         [].forEach.call(document.querySelectorAll("[data-tsrc]"), function (b) { b.addEventListener("click", function () { tOpts.src = b.dataset.tsrc; testSetup(); }); });
+        [].forEach.call(document.querySelectorAll("[data-tmode]"), function (b) { b.addEventListener("click", function () { tOpts.mode = b.dataset.tmode; testSetup(); }); });
         $("t-start").addEventListener("click", testStart);
         $("t-opts").addEventListener("click", function (e) { var b = e.target.closest("[data-o]"); if (b) testAnswer(+b.dataset.o); });
         $("t-next").addEventListener("click", testNext);
