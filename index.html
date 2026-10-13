@@ -850,6 +850,15 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
       }
       .x-opt:active:not(:disabled) { transform: scale(0.99); }
       .x-opt:disabled { cursor: default; }
+      .x-opts li { display: flex; gap: 6px; align-items: stretch; }
+      .x-opts li .x-opt { flex: 1; min-width: 0; }
+      .x-opt span { display: grid; gap: 2px; }
+      .x-opt__tr { font: var(--type-small); color: var(--text-secondary); }
+      .x-optinfo {
+        flex: none; width: 48px; border: 1px solid var(--stroke-primary); border-radius: var(--r-m);
+        background: var(--fill-primary-on); color: var(--text-secondary); font: var(--type-label); cursor: pointer;
+      }
+      .x-optinfo[aria-pressed="true"] { background: var(--fill-primary); color: var(--text-primary-on); }
       .x-opt b { flex: none; min-width: 2.2ch; font: var(--type-label); color: var(--text-secondary); }
       .x-opt.is-right { border-color: var(--fill-system-green); box-shadow: inset 0 0 0 1px var(--fill-system-green); background: color-mix(in srgb, var(--fill-system-green) 12%, var(--fill-primary-on)); }
       .x-opt.is-wrong { border-color: var(--fill-system-red); box-shadow: inset 0 0 0 1px var(--fill-system-red); background: color-mix(in srgb, var(--fill-system-red) 12%, var(--fill-primary-on)); }
@@ -2043,7 +2052,12 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           if (!pool.length) { toast("Test için uygun kart yok"); return; }
           var qs = shuffle(pool.slice()).slice(0, tOpts.n).map(function (c) {
             var b = mean ? { q: c.tr, ans: baseForm(c.en) } : blankOf(c), opts = shuffle(distractors(c, b.ans).concat([b.ans]));
-            return { id: c.id, q: b.q, ans: b.ans, opts: opts, right: opts.indexOf(b.ans), mean: mean };
+            var trs = opts.map(function (o) {
+              if (o === b.ans) return c.tr || "";
+              var k = o.toLowerCase(), m = state.cards.filter(function (x) { return baseForm(x.en).toLowerCase() === k; })[0];
+              return m ? m.tr : "";
+            });
+            return { id: c.id, q: b.q, ans: b.ans, opts: opts, trs: trs, right: opts.indexOf(b.ans), mean: mean };
           });
           T = { qs: qs, i: 0, score: 0, missed: [], answered: false };
           document.body.classList.add("is-studying");
@@ -2063,7 +2077,10 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $("t-q").classList.toggle("x-q__text--mean", !!q.mean);
           $("t-q").innerHTML = q.mean ? esc(q.q) : wordsHTML(q.q);
           $("t-opts").innerHTML = q.opts.map(function (o, k) {
-            return '<li><button class="x-opt" type="button" data-o="' + k + '"><b>' + LETTERS[k] + ")</b><span>" + esc(o) + "</span></button></li>";
+            var tr = q.trs && q.trs[k];
+            return '<li><button class="x-opt" type="button" data-o="' + k + '"><b>' + LETTERS[k] + ")</b><span><span>" + esc(o) + "</span>" +
+              (tr ? '<small class="x-opt__tr" lang="tr" hidden>' + esc(tr) + "</small>" : "") + "</span></button>" +
+              (tr ? '<button class="x-optinfo" type="button" data-oi="' + k + '" aria-pressed="false" aria-label="' + esc(o) + ' anlamı" hidden>TR</button>' : "") + "</li>";
           }).join("");
           $("t-reveal").hidden = true; $("t-next").hidden = true;
           window.scrollTo(0, 0);
@@ -2089,7 +2106,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $("t-extr").hidden = !xt;
           $("t-mn-text").textContent = c && c.mn ? c.mn : "";
           $("t-mn").hidden = true;
-          $("t-peek").hidden = !(c && c.mn); $("t-peek").setAttribute("aria-expanded", "false"); $("t-peek").textContent = "💡 İpucu";
+          $("t-peek").hidden = true; /* hint removed from test answers (user, 2026-10-14) */
+          [].forEach.call($("t-opts").querySelectorAll(".x-optinfo"), function (b) { b.hidden = false; });
           $("t-reveal").hidden = false; $("t-next").hidden = false;
           $("t-next").textContent = T.i + 1 < T.qs.length ? "Sonraki" : "Sonucu gör";
           $("t-next").focus({ preventScroll: true });
@@ -2131,7 +2149,14 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         [].forEach.call(document.querySelectorAll("[data-tsrc]"), function (b) { b.addEventListener("click", function () { tOpts.src = b.dataset.tsrc; testSetup(); }); });
         [].forEach.call(document.querySelectorAll("[data-tmode]"), function (b) { b.addEventListener("click", function () { tOpts.mode = b.dataset.tmode; testSetup(); }); });
         $("t-start").addEventListener("click", testStart);
-        $("t-opts").addEventListener("click", function (e) { var b = e.target.closest("[data-o]"); if (b) testAnswer(+b.dataset.o); });
+        $("t-opts").addEventListener("click", function (e) {
+          var i = e.target.closest("[data-oi]");
+          if (i) {
+            var on = i.getAttribute("aria-pressed") !== "true", tr = i.parentNode.querySelector(".x-opt__tr");
+            i.setAttribute("aria-pressed", String(on)); if (tr) tr.hidden = !on; return;
+          }
+          var b = e.target.closest("[data-o]"); if (b) testAnswer(+b.dataset.o);
+        });
         $("t-next").addEventListener("click", testNext);
         $("t-close").addEventListener("click", function () { if (T && T.i + (T.answered ? 1 : 0) > 0 && confirm("Test bitirilsin mi? Cevaplanan sorular sonuçta gösterilir.")) { T.qs = T.qs.slice(0, T.i + (T.answered ? 1 : 0)); testEnd(); } else if (T && !(T.i + (T.answered ? 1 : 0))) testSetup(); });
         $("t-addwrong").addEventListener("click", testAddWrong);
