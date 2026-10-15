@@ -976,6 +976,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
               <button type="button" data-order="alpha" aria-pressed="false">Alfabetik</button>
               <button type="button" data-order="mix" aria-pressed="true">Karışık (varsayılan)</button>
             </div>
+            <button class="x-big x-big--ghost" id="reset-all" type="button">İlerlemeyi sıfırla</button>
+            <p class="fineprint">Tüm kartlar yeniden “yeni” olur ve karışık sırayla baştan başlar. Kendi eklediğin kartlar silinmez.</p>
           </div>
         </section>
 
@@ -2149,6 +2151,18 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         [].forEach.call(document.querySelectorAll("[data-tsrc]"), function (b) { b.addEventListener("click", function () { tOpts.src = b.dataset.tsrc; testSetup(); }); });
         [].forEach.call(document.querySelectorAll("[data-tmode]"), function (b) { b.addEventListener("click", function () { tOpts.mode = b.dataset.tmode; testSetup(); }); });
         $("t-start").addEventListener("click", testStart);
+        $("reset-all").addEventListener("click", function () {
+          if (!confirm("Tüm ilerleme silinsin ve kartlar karışık sırayla baştan başlasın mı? Bu geri alınamaz.")) return;
+          var keep = { newLimit: state.settings.newLimit, dir: state.settings.dir };
+          var cards = state.cards.map(function (c) { return freshCard(c.id, c, c.custom); });
+          state = { cards: cards, order: mixedOrder(cards),
+            settings: { newLimit: keep.newLimit, dir: keep.dir, newOrder: "mix", orderChosen: true, orderV2: true },
+            day: { date: dayKey(Date.now()), newDone: 0, extra: 0 }, recent: [] };
+          if (canStore) { try { localStorage.removeItem(KEY + "-letter"); } catch (e) {} }
+          S = null; UNDO = []; updateUndo();
+          save(); renderHome(); window.scrollTo(0, 0);
+          toast("İlerleme sıfırlandı · karışık sırayla baştan");
+        });
         $("t-opts").addEventListener("click", function (e) {
           var i = e.target.closest("[data-oi]");
           if (i) {
