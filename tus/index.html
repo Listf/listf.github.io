@@ -43,7 +43,7 @@ nav button.on{color:var(--acc);font-weight:600}
 .ln{border-left:3px solid var(--line);padding:8px 0 8px 12px;margin:8px 0}
 .ln .q{font-weight:500}
 .ln .a{margin-top:4px;color:var(--acc);font-weight:600}
-.ln.cur{border-color:var(--acc);background:var(--card);border-radius:0 12px 12px 0;padding:12px}
+.ln.cur{touch-action:pan-y;will-change:transform;border-color:var(--acc);background:var(--card);border-radius:0 12px 12px 0;padding:12px}
 .ln.ok{border-color:var(--ok)}.ln.bad{border-color:var(--bad)}
 .ln.hid .q{color:var(--mut);letter-spacing:.2em}
 .dots{color:var(--mut);letter-spacing:.25em}
@@ -161,7 +161,10 @@ function grade(g){
  if(Q.li>=b.ids.length){Q.pendingNext=true}
  render();
 }
-function nextBlock(){Q.pendingNext=false;Q.bi++;Q.li=0;Q.revealed=false;render();window.scrollTo(0,0)}
+const ROUND=10;
+function nextBlock(){Q.pendingNext=false;Q.bi++;Q.li=0;Q.revealed=false;
+ if(Q.blocks[Q.bi]&&Q.done-(Q.rs||0)>=ROUND)Q.pause=true;
+ render();window.scrollTo(0,0)}
 
 // ---------- UI ----------
 let view=S.cfg?"home":"onboard";
@@ -204,7 +207,7 @@ function home(app){
  ${p.short?`<div class="warn">Hedefe yetişmek için günde ~${p.need} yeni kart gerekir; şu an ${p.daily}. Ayarlar'dan süreyi artırabilirsin.</div>`:""}
  <div class="box"><div class="row"><span>Genel ilerleme</span><span class="mut">${seen} / ${CARDS.length}</span></div><div class="bar"><i style="width:${seen/CARDS.length*100}%"></i></div>
  <div class="row"><span class="mut">Bugünkü doğruluk</span><span>${lg.n?Math.round(lg.ok/lg.n*100)+"%":"–"}</span></div></div>
- <p class="mut">İpucu: Kartı aç, cevabı içinden söyle, dokunarak göster, sonra ✕ ya da ✓.</p>`;
+ <p class="mut">İpucu: Cevabı içinden söyle, karta dokun, sonra sola kaydır ✕ ya da sağa kaydır ✓. Her 10 kartta mola.</p>`;
  const b=$("#st");if(b)b.onclick=()=>startSession();
  const e=$("#ex");if(e)e.onclick=()=>startSession(10);
 }
@@ -217,9 +220,12 @@ function study(app){
   app.innerHTML=`<h1>Tebrikler 🎉</h1><p class="mut">Oturum bitti.</p><div class="big"><div><b>${lg.n}</b><span>Bugün çözülen</span></div><div><b>${lg.n?Math.round(lg.ok/lg.n*100):0}%</b><span>Doğruluk</span></div></div><div style="height:14px"></div><button class="btn" id="hm">Ana sayfa</button>`;
   $("#hm").onclick=()=>{Q=null;view="home";render()};return;
  }
+ if(Q.pause){const left=Q.total-Q.done;
+  app.innerHTML=`<h1>Kısa mola ☕</h1><p class="mut">${Q.done-(Q.rs||0)} kart bitti. Kalan: ${left}.</p><button class="btn" id="dv">Devam et</button><div style="height:10px"></div><button class="btn sec" id="bt">Şimdilik bitir</button>`;
+  $("#dv").onclick=()=>{Q.pause=false;Q.rs=Q.done;render()};$("#bt").onclick=()=>{Q=null;view="home";render()};return}
  const c0=BY[b.ids[0]];
  const pct=Math.round(Q.done/Q.total*100);
- let h=`<div class="top"><button class="x" id="q">✕</button><div class="bar"><i style="width:${pct}%"></i></div><span class="mut">${Q.done}/${Q.total}</span></div>
+ let h2="";let h=`<div class="top"><button class="x" id="q">✕</button><div class="bar"><i style="width:${pct}%"></i></div><span class="mut">${Q.done}/${Q.total}</span></div>
  <div class="subj">${esc(c0.subj)}</div><div class="topic">${esc(c0.topic)}${b.again?'<span class="tag">tekrar</span>':""}</div>`;
  b.ids.forEach((id,i)=>{const c=BY[id];
   if(i<Q.li||Q.pendingNext){const g=Q.res[b.tk+"|"+id];h+=`<div class="ln ${g===3?"ok":"bad"}"><div class="q">${esc(c.q)}</div><div class="a">${esc(c.a)}</div></div>`}
@@ -232,10 +238,19 @@ function study(app){
  act.classList.remove("hide");
  if(Q.pendingNext){ai.innerHTML=`<button class="btn" id="nx">${Q.bi+1<Q.blocks.length?"Sonraki konu →":"Bitir"}</button>`;$("#nx").onclick=nextBlock}
  else if(!Q.revealed){ai.innerHTML=`<button class="btn" id="rv">Cevabı göster</button>`;$("#rv").onclick=reveal;const cu=$("#cur");if(cu)cu.onclick=reveal}
- else{ai.innerHTML=`<button class="gb no" id="no">✕</button><button class="gb yes" id="ys">✓</button>`;$("#no").onclick=()=>grade(1);$("#ys").onclick=()=>grade(3)}
+ else{ai.innerHTML=`<button class="gb no" id="no">✕</button><button class="gb yes" id="ys">✓</button>`;h2=`<p class="mut" style="text-align:center;margin:-90px 0 0">← sola ✕ · sağa ✓ →</p>`;$("#no").onclick=()=>grade(1);$("#ys").onclick=()=>grade(3)}
+ if(h2)app.insertAdjacentHTML("beforeend",`<p class="mut" style="text-align:center">← sola kaydır ✕ · sağa kaydır ✓ →</p>`);
  const cu=$("#cur");if(cu)cu.scrollIntoView({block:"center",behavior:"smooth"});
 }
 function reveal(){Q.revealed=true;render()}
+(function(){let x0=0,y0=0,dx=0,on=false,el=null;
+ document.addEventListener("touchstart",e=>{if(view!=="study"||!Q||Q.pause||Q.pendingNext||!Q.revealed)return;el=document.getElementById("cur");if(!el)return;const t=e.touches[0];x0=t.clientX;y0=t.clientY;dx=0;on=true;el.style.transition="none"},{passive:true});
+ document.addEventListener("touchmove",e=>{if(!on||!el)return;const t=e.touches[0];dx=t.clientX-x0;const dy=t.clientY-y0;if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dx)<20)return;
+  el.style.transform=`translateX(${dx}px) rotate(${dx/30}deg)`;const k=Math.min(1,Math.abs(dx)/90);el.style.background=dx>0?`rgba(22,163,74,${k*.25})`:`rgba(220,38,38,${k*.25})`;el.style.borderColor=dx>0?"var(--ok)":"var(--bad)"},{passive:true});
+ document.addEventListener("touchend",()=>{if(!on||!el)return;on=false;const d=dx;
+  if(Math.abs(d)>80){el.style.transition="transform .15s";el.style.transform=`translateX(${d>0?400:-400}px) rotate(${d/15}deg)`;setTimeout(()=>grade(d>0?3:1),130)}
+  else{el.style.transition="transform .2s";el.style.transform="";el.style.background="";el.style.borderColor=""}});
+})();
 document.addEventListener("keydown",e=>{if(view!=="study"||!Q)return;if(Q.pendingNext&&(e.key==="Enter"||e.key===" ")){nextBlock();return}if(!Q.revealed&&(e.key===" "||e.key==="Enter")){e.preventDefault();reveal()}else if(Q.revealed){if(e.key==="1"||e.key==="ArrowLeft")grade(1);if(e.key==="2"||e.key==="ArrowRight")grade(3)}});
 
 function subjStats(s){const cs=CARDS.filter(c=>c.subj===s);const seen=cs.filter(c=>S.cards[c.id]);const mature=seen.filter(c=>(S.cards[c.id].s||0)>=21);return{n:cs.length,seen:seen.length,mature:mature.length,due:cs.filter(c=>S.cards[c.id]&&S.cards[c.id].due<=endToday()).length}}
