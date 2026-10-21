@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="TUS Kart">
+<meta name="theme-color" content="#0f766e">
+<title>TUS Kart</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#14181f;--mut:#6b7280;--line:#e5e7eb;--acc:#0f766e;--acc2:#ccfbf1;--ok:#16a34a;--bad:#dc2626;--r:16px}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--card:#161b22;--tx:#e6edf3;--mut:#8b949e;--line:#30363d;--acc:#2dd4bf;--acc2:#134e4a}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom))}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+h1{font-size:24px;margin:8px 0 4px}h2{font-size:18px;margin:18px 0 8px}
+.mut{color:var(--mut);font-size:14px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:17px;font-weight:600;background:var(--acc);color:#fff;cursor:pointer}
+.btn.sec{background:var(--card);color:var(--tx);border:1px solid var(--line)}
+.btn:disabled{opacity:.45}
+label{display:block;font-weight:600;margin:14px 0 6px}
+input[type=date],input[type=number]{width:100%;padding:13px;font-size:17px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--tx)}
+.big{display:flex;gap:10px}.big>div{flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 6px}
+.big b{display:block;font-size:26px}.big span{font-size:13px;color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:999px;padding:8px 13px;font-size:14px;cursor:pointer}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--mut);padding:10px 0 12px;font-size:12px;cursor:pointer}
+nav button i{display:block;font-style:normal;font-size:20px}
+nav button.on{color:var(--acc);font-weight:600}
+.bar{height:8px;background:var(--line);border-radius:9px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--acc)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0 4px;font-size:14px}
+/* study */
+.top{display:flex;align-items:center;gap:10px}
+.top .bar{flex:1}
+.x{border:0;background:none;font-size:22px;color:var(--mut);cursor:pointer;padding:4px 8px}
+.subj{font-size:13px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.04em;margin-top:14px}
+.topic{font-size:20px;font-weight:700;margin:2px 0 10px}
+.ln{border-left:3px solid var(--line);padding:8px 0 8px 12px;margin:8px 0}
+.ln .q{font-weight:500}
+.ln .a{margin-top:4px;color:var(--acc);font-weight:600}
+.ln.cur{border-color:var(--acc);background:var(--card);border-radius:0 12px 12px 0;padding:12px}
+.ln.ok{border-color:var(--ok)}.ln.bad{border-color:var(--bad)}
+.ln.hid .q{color:var(--mut);letter-spacing:.2em}
+.dots{color:var(--mut);letter-spacing:.25em}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:9px;background:var(--acc2);color:var(--acc);margin-left:6px;vertical-align:2px;font-weight:600}
+.act{position:fixed;left:0;right:0;bottom:0;background:var(--bg);padding:12px 16px calc(12px + env(safe-area-inset-bottom));z-index:6}
+.act .in{max-width:560px;margin:0 auto;display:flex;gap:12px}
+.gb{flex:1;border:0;border-radius:16px;padding:16px;font-size:26px;font-weight:700;color:#fff;cursor:pointer}
+.gb.no{background:var(--bad)}.gb.yes{background:var(--ok)}
+.hide{display:none!important}
+.week{display:flex;align-items:flex-end;gap:6px;height:90px;margin-top:8px}
+.week div{flex:1;text-align:center;font-size:11px;color:var(--mut)}
+.week div i{display:block;background:var(--acc);border-radius:6px 6px 0 0;margin:0 auto 4px;width:70%;min-height:2px}
+.warn{background:#fef3c7;color:#92400e;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:10px}
+@media(prefers-color-scheme:dark){.warn{background:#422006;color:#fcd34d}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<nav id="nav">
+ <button data-v="home" class="on"><i>🏠</i>Bugün</button>
+ <button data-v="subjects"><i>📚</i>Dersler</button>
+ <button data-v="stats"><i>📊</i>İstatistik</button>
+ <button data-v="settings"><i>⚙️</i>Ayarlar</button>
+</nav>
+<div class="act hide" id="act"><div class="in" id="actin"></div></div>
+<script>
+const DECK=[{"subject": "Anatomi", "topics": [{"topic": "Brakiyal pleksus yaralanmaları", "cards": [{"q": "Erb-Duchenne felcinde etkilenen kökler?", "a": "C5-C6 (üst trunkus); 'garson bahşişi' pozisyonu."}, {"q": "Klumpke felcinde etkilenen kökler?", "a": "C8-T1 (alt trunkus); pençe el, Horner sendromu eşlik edebilir."}, {"q": "Kanatlı skapulaya yol açan sinir hasarı?", "a": "N. thoracicus longus (m. serratus anterior felci)."}, {"q": "Humerus cerrahi boyun kırığında risk altındaki sinir?", "a": "N. axillaris (deltoid ve teres minor)."}, {"q": "Humerus cisim (spiral oluk) kırığında hasarlanan sinir?", "a": "N. radialis; düşük el (wrist drop)."}]}, {"topic": "Üst ekstremite ve el", "cards": [{"q": "Karpal tünel sendromunda sıkışan sinir?", "a": "N. medianus; tenar atrofi."}, {"q": "Guyon kanalından geçen sinir?", "a": "N. ulnaris."}, {"q": "Rotator manşet kasları?", "a": "Supraspinatus, infraspinatus, teres minor, subscapularis."}, {"q": "En sık yırtılan rotator manşet kası?", "a": "Supraspinatus."}, {"q": "Anatomik enfiye çukurunda hassasiyet hangi kırığı düşündürür?", "a": "Skafoid kırığı; proksimal parçada avasküler nekroz riski."}]}, {"topic": "Alt ekstremite sinir yaralanmaları", "cards": [{"q": "Fibula boynu kırığında hasarlanan sinir?", "a": "N. fibularis (peroneus) communis; düşük ayak."}, {"q": "Trendelenburg bulgusu hangi sinir hasarında görülür?", "a": "N. gluteus superior (gluteus medius ve minimus)."}, {"q": "Sandalyeden kalkma ve merdiven çıkma güçlüğü hangi sinir hasarında?", "a": "N. gluteus inferior (gluteus maximus)."}, {"q": "Uyluk adduksiyon kaybı hangi sinir hasarında?", "a": "N. obturatorius."}, {"q": "Tarsal tünel sendromunda sıkışan sinir?", "a": "N. tibialis."}]}, {"topic": "Kraniyal sinirler", "cards": [{"q": "M. rectus lateralis'i innerve eden sinir?", "a": "N. abducens (CN VI)."}, {"q": "M. obliquus superior'u innerve eden sinir?", "a": "N. trochlearis (CN IV)."}, {"q": "Dilin ön 2/3 tat duyusunu taşıyan sinir?", "a": "N. facialis (chorda tympani)."}, {"q": "Dilin arka 1/3 tat ve genel duyusu?", "a": "N. glossopharyngeus (CN IX)."}, {"q": "Parotis bezinin parasempatik innervasyonu?", "a": "N. glossopharyngeus; ganglion oticum üzerinden."}]}, {"topic": "Kalp ve koroner dolaşım", "cards": [{"q": "SA düğümünü çoğunlukla besleyen arter?", "a": "A. coronaria dextra (~%60)."}, {"q": "AV düğümünü çoğunlukla besleyen arter?", "a": "A. coronaria dextra (sağ dominant dolaşımda)."}, {"q": "LAD (ramus interventricularis anterior) neyi besler?", "a": "Septumun ön 2/3'ü ve sol ventrikül ön duvarı."}, {"q": "Koroner dominans neye göre belirlenir?", "a": "Arka inen arteri (PDA) veren artere göre; çoğunlukla sağ."}]}, {"topic": "İnguinal bölge ve herniler", "cards": [{"q": "İndirekt inguinal herni a. epigastrica inferior'a göre nerede?", "a": "Lateralinde; derin inguinal halkadan girer."}, {"q": "Direkt inguinal herni nereden çıkar?", "a": "Hesselbach üçgeninden, a. epigastrica inferior'un medialinden."}, {"q": "Hesselbach üçgeninin sınırları?", "a": "A. epigastrica inferior, m. rectus abdominis lateral kenarı, lig. inguinale."}, {"q": "Femoral herninin özelliği?", "a": "Lig. inguinale altından çıkar; kadınlarda sık, boğulma riski yüksek."}]}, {"topic": "Karın damarları", "cards": [{"q": "Truncus coeliacus'un dalları?", "a": "A. gastrica sinistra, a. splenica, a. hepatica communis."}, {"q": "Orta bağırsağın (midgut) arteri?", "a": "A. mesenterica superior."}, {"q": "Duodenum arka duvar ülser perforasyonunda kanayan arter?", "a": "A. gastroduodenalis."}, {"q": "Portal hipertansiyonda özofagus varisleri hangi anastomozdan?", "a": "V. gastrica sinistra ile vv. oesophageae (azygos sistemi)."}]}]}, {"subject": "Fizyoloji", "topics": [{"topic": "Membran ve aksiyon potansiyeli", "cards": [{"q": "İstirahat membran potansiyelini en çok belirleyen iyon?", "a": "K+ (sızıntı kanalları)."}, {"q": "Na+/K+ ATPaz bir döngüde ne taşır?", "a": "3 Na+ dışarı, 2 K+ içeri; elektrojeniktir."}, {"q": "Nöronda depolarizasyonun nedeni?", "a": "Voltaj kapılı Na+ kanallarının açılması."}, {"q": "Mutlak refrakter dönemin nedeni?", "a": "Na+ kanallarının inaktivasyon kapılarının kapalı olması."}, {"q": "Miyelinli liflerde ileti şekli?", "a": "Saltatuvar ileti (Ranvier düğümleri arasında)."}]}, {"topic": "Kalp fizyolojisi", "cards": [{"q": "Ventrikül kası AP'sinde plato fazını (faz 2) sağlayan akım?", "a": "L tipi Ca2+ kanallarından Ca2+ girişi."}, {"q": "SA düğümde faz 4 spontan depolarizasyonun akımı?", "a": "If ('funny') akımı, HCN kanalları."}, {"q": "İletim hızının en yavaş olduğu yer?", "a": "AV düğüm."}, {"q": "İletim hızının en hızlı olduğu yer?", "a": "Purkinje lifleri."}, {"q": "Frank-Starling yasası?", "a": "Diyastol sonu hacim (ön yük) arttıkça atım hacmi artar."}]}, {"topic": "Solunum fizyolojisi", "cards": [{"q": "Sürfaktanı üreten hücre ve ana bileşeni?", "a": "Tip II pnömosit; dipalmitoil fosfatidilkolin."}, {"q": "Fonksiyonel rezidüel kapasite neye eşittir?", "a": "Ekspiratuvar yedek volüm + rezidüel volüm."}, {"q": "Spirometriyle ölçülemeyen volüm?", "a": "Rezidüel volüm (dolayısıyla FRC ve TLC de)."}, {"q": "O2-Hb disosiyasyon eğrisini sağa kaydıranlar?", "a": "↑CO2, ↑H+, ↑sıcaklık, ↑2,3-BPG."}, {"q": "Santral kemoreseptörlerin ana uyaranı?", "a": "BOS'taki H+ artışı (PaCO2 yükselmesine bağlı)."}, {"q": "Ayakta V/Q oranının en yüksek olduğu bölge?", "a": "Akciğer apeksi."}]}, {"topic": "Böbrek fizyolojisi", "cards": [{"q": "Glukozun geri emildiği segment?", "a": "Proksimal tübül (SGLT2)."}, {"q": "ADH toplayıcı kanalda nasıl etki eder?", "a": "V2 reseptörü → akuaporin-2 membrana yerleşir."}, {"q": "Aldosteronun toplayıcı kanal esas hücrelerine etkisi?", "a": "Na+ geri emilimi ve K+ sekresyonu artar."}, {"q": "GFR ölçümünde altın standart?", "a": "İnülin klirensi."}, {"q": "Henle çıkan kalın kolundaki taşıyıcı ve onu bloke eden ilaç?", "a": "NKCC2 (Na-K-2Cl); furosemid."}, {"q": "Renini salgılayan hücreler?", "a": "Afferent arteriol duvarındaki jukstaglomerüler hücreler."}]}, {"topic": "Endokrin fizyoloji", "cards": [{"q": "Tiroid hormonu reseptörü nerededir?", "a": "Nükleer reseptör."}, {"q": "Periferde aktif tiroid hormonu nasıl oluşur?", "a": "T4 deiyodinaz ile T3'e dönüşür."}, {"q": "Kortizol düzeyi günün hangi saatinde en yüksektir?", "a": "Sabah erken saatlerde."}, {"q": "İnsüline bağımlı glukoz taşıyıcısı ve dokuları?", "a": "GLUT4; iskelet kası ve yağ dokusu."}, {"q": "PTH'nin böbrek etkileri?", "a": "Ca2+ geri emilimi ↑, fosfat atılımı ↑, 1α-hidroksilaz ↑."}, {"q": "Prolaktin salgısını baskılayan ana faktör?", "a": "Hipotalamik dopamin."}]}, {"topic": "Gastrointestinal hormonlar", "cards": [{"q": "Gastrini salgılayan hücre?", "a": "Mide antrumundaki G hücreleri."}, {"q": "Sekretinin ana uyaranı ve etkisi?", "a": "Duodenumda asit; pankreastan HCO3- salgısı."}, {"q": "CCK'nın etkileri?", "a": "Safra kesesi kasılması ve pankreas enzim salgısı (I hücreleri)."}, {"q": "Açlıkta migratuvar motor kompleksi başlatan hormon?", "a": "Motilin."}, {"q": "B12 vitamini nerede emilir?", "a": "Terminal ileum; intrinsik faktör (pariyetal hücre) gerekir."}]}, {"topic": "Kas fizyolojisi", "cards": [{"q": "İskelet kasında Ca2+'yi bağlayan protein?", "a": "Troponin C."}, {"q": "Düz kasta Ca2+'yi bağlayan protein?", "a": "Kalmodulin → MLCK aktivasyonu."}, {"q": "Rigor mortisin nedeni?", "a": "ATP yokluğunda miyozin başı aktinden ayrılamaz."}]}]}, {"subject": "Biyokimya", "topics": [{"topic": "Glikojen depo hastalıkları", "cards": [{"q": "Von Gierke hastalığında eksik enzim nedir?", "a": "Glukoz-6-fosfataz; ağır açlık hipoglisemisi, laktik asidoz, hepatomegali."}, {"q": "Pompe hastalığında eksik enzim ve tipik bulgu?", "a": "Lizozomal asit α-glukozidaz (asit maltaz); kardiyomegali."}, {"q": "McArdle hastalığında eksik enzim?", "a": "Kas glikojen fosforilazı; egzersizle kramp ve miyoglobinüri."}, {"q": "Cori hastalığında eksik enzim ve biriken yapı?", "a": "Dallanma kaldırıcı enzim (amilo-1,6-glukozidaz); limit dekstrin birikir."}, {"q": "Hers hastalığında eksik enzim?", "a": "Karaciğer glikojen fosforilazı."}]}, {"topic": "Lizozomal depo hastalıkları", "cards": [{"q": "Gaucher hastalığında eksik enzim?", "a": "Glukoserebrozidaz; buruşuk kâğıt görünümlü makrofajlar."}, {"q": "Niemann-Pick hastalığında eksik enzim?", "a": "Sfingomiyelinaz; köpüklü hücreler, hepatosplenomegali, kiraz kırmızısı makula."}, {"q": "Tay-Sachs'ı Niemann-Pick'ten ayıran klinik özellik?", "a": "Tay-Sachs'ta (heksozaminidaz A eksikliği) hepatosplenomegali yoktur."}, {"q": "Fabry hastalığında eksik enzim ve kalıtım?", "a": "α-galaktozidaz A; X'e bağlı resesif."}, {"q": "Hunter sendromunu Hurler'den ayıran özellikler?", "a": "X'e bağlı, iduronat-2-sülfataz eksikliği, korneal bulanıklık yok."}]}, {"topic": "Aminoasit metabolizması bozuklukları", "cards": [{"q": "Klasik fenilketonüride eksik enzim?", "a": "Fenilalanin hidroksilaz; kofaktörü tetrahidrobiyopterin (BH4)."}, {"q": "Bekletilince kararan idrar hangi hastalığı düşündürür?", "a": "Alkaptonüri (homogentisat oksidaz eksikliği); okronozis."}, {"q": "Akçaağaç şurubu idrar hastalığında biriken aminoasitler?", "a": "Dallı zincirli aminoasitler: lösin, izolösin, valin."}, {"q": "Klasik homosistinüride eksik enzim ve lens bulgusu?", "a": "Sistatyonin β-sentaz; lens aşağı-içe dislokasyonu."}, {"q": "Okülokutanöz albinizmde (tip 1) eksik enzim?", "a": "Tirozinaz."}]}, {"topic": "Vitaminler", "cards": [{"q": "Tiamin (B1) hangi enzimlerin kofaktörüdür?", "a": "PDH, α-ketoglutarat DH, dallı zincirli α-ketoasit DH ve transketolaz."}, {"q": "Pellegranın üç bulgusu?", "a": "Dermatit, diyare, demans (niasin eksikliği)."}, {"q": "B12 eksikliğini folat eksikliğinden ayıran laboratuvar bulgusu?", "a": "Metilmalonik asit yalnız B12 eksikliğinde artar."}, {"q": "K vitamini hangi reaksiyonda kofaktördür?", "a": "Glutamat γ-karboksilasyonu (faktör II, VII, IX, X, protein C ve S)."}, {"q": "C vitamini kollajen sentezinde ne yapar?", "a": "Prolin ve lizin hidroksilasyonunda kofaktördür; eksikliği skorbüt."}]}, {"topic": "Hız kısıtlayıcı enzimler ve kinetik", "cards": [{"q": "Glikolizin hız kısıtlayıcı enzimi?", "a": "Fosfofruktokinaz-1."}, {"q": "Glukoneogenezin hız kısıtlayıcı enzimi?", "a": "Fruktoz-1,6-bisfosfataz."}, {"q": "Kolesterol sentezinin hız kısıtlayıcı enzimi?", "a": "HMG-KoA redüktaz (statinlerin hedefi)."}, {"q": "Üre döngüsünün hız kısıtlayıcı enzimi ve aktivatörü?", "a": "Karbamoil fosfat sentetaz I; N-asetilglutamat ile aktive olur."}, {"q": "Yağ asidi sentezinin hız kısıtlayıcı enzimi?", "a": "Asetil-KoA karboksilaz (biyotin bağımlı)."}, {"q": "Kompetitif inhibisyonda Km ve Vmax nasıl değişir?", "a": "Km artar, Vmax değişmez."}]}, {"topic": "Lipoprotein metabolizması", "cards": [{"q": "Tip I hiperlipoproteinemide defekt ve risk?", "a": "LPL veya apo C-II eksikliği; şilomikron artışı, akut pankreatit."}, {"q": "Ailesel hiperkolesterolemide (tip IIa) temel defekt?", "a": "LDL reseptör defekti."}, {"q": "Apo B-48 ve apo B-100 hangi lipoproteinlerde bulunur?", "a": "B-48 şilomikronda; B-100 VLDL, IDL ve LDL'de."}, {"q": "Abetalipoproteinemide defekt ve yayma bulgusu?", "a": "MTP (mikrozomal trigliserit transfer proteini) defekti; akantositler."}]}, {"topic": "Hem sentezi ve porfiriler", "cards": [{"q": "Hem sentezinin hız kısıtlayıcı enzimi ve kofaktörü?", "a": "ALA sentaz; piridoksal fosfat (B6)."}, {"q": "Akut intermittan porfiride eksik enzim?", "a": "Porfobilinojen deaminaz; karın ağrısı, nöropsikiyatrik bulgu, fotosensitivite yok."}, {"q": "En sık görülen porfiri ve eksik enzim?", "a": "Porfiria kutanea tarda; üroporfirinojen dekarboksilaz."}, {"q": "Kurşun zehirlenmesinde inhibe olan hem sentez enzimleri?", "a": "ALA dehidrataz ve ferroşelataz."}]}]}, {"subject": "Mikrobiyoloji", "topics": [{"topic": "Gram pozitif koklar", "cards": [{"q": "S. aureus'u diğer stafilokoklardan ayıran temel test?", "a": "Koagülaz pozitifliği."}, {"q": "Novobiyosine dirençli stafilokok ve tipik enfeksiyonu?", "a": "S. saprophyticus; genç kadınlarda idrar yolu enfeksiyonu."}, {"q": "S. pneumoniae'yi viridans streptokoklardan ayıran testler?", "a": "Optokine duyarlılık ve safrada erime."}, {"q": "Grup B streptokoku tanımlayan test?", "a": "CAMP testi pozitif (ve hippurat hidrolizi)."}, {"q": "Enterokokların ayırt edici üreme özelliği?", "a": "%6,5 NaCl ve safralı eskülinde ürer."}]}, {"topic": "Gram pozitif basiller", "cards": [{"q": "Difteri toksininin etki mekanizması?", "a": "EF-2'yi ADP-ribozile ederek protein sentezini durdurur."}, {"q": "Listeria'nın oda ısısındaki hareket şekli?", "a": "Takla atma (tumbling) hareketi; soğukta da ürer."}, {"q": "Tetanospazmin hangi nörotransmiterlerin salınımını engeller?", "a": "İnhibitör glisin ve GABA."}, {"q": "Botulinum toksininin etki mekanizması?", "a": "Asetilkolin salınımını engeller; flask paralizi."}, {"q": "B. anthracis kapsülünün yapısı?", "a": "Poli-D-glutamik asit (polipeptit kapsül)."}]}, {"topic": "Gram negatif bakteriler", "cards": [{"q": "N. meningitidis'i N. gonorrhoeae'dan ayıran şeker testi?", "a": "Meningokok glukoz ve maltozu, gonokok yalnız glukozu fermente eder."}, {"q": "E. coli O157:H7'nin ayırt edici özelliği?", "a": "Sorbitolü fermente etmez; HÜS etkenidir."}, {"q": "H. influenzae'nin üremek için gerektirdiği faktörler?", "a": "X faktörü (hemin) ve V faktörü (NAD)."}, {"q": "Legionella için kullanılan besiyeri?", "a": "Tamponlu kömür maya ekstresi (BCYE) agar."}, {"q": "Yeşil pigment ve üzüm kokusu yapan oksidaz pozitif bakteri?", "a": "Pseudomonas aeruginosa (piyosiyanin)."}, {"q": "H. pylori'nin hızlı tanıda kullanılan enzimi?", "a": "Üreaz."}]}, {"topic": "Mikobakteriler ve spiroketler", "cards": [{"q": "M. tuberculosis için klasik besiyeri?", "a": "Löwenstein-Jensen."}, {"q": "M. tuberculosis'te kord faktörün yapısı?", "a": "Trehaloz dimikolat."}, {"q": "Sifilizde tarama ve doğrulama testleri?", "a": "Tarama VDRL/RPR; doğrulama FTA-ABS veya TPHA."}, {"q": "Lyme hastalığının etkeni ve vektörü?", "a": "Borrelia burgdorferi; Ixodes kenesi."}, {"q": "Sarılık ve böbrek yetmezliğiyle seyreden leptospiroz formu?", "a": "Weil hastalığı."}]}, {"topic": "Viroloji", "cards": [{"q": "HBV pencere döneminde pozitif olan belirteç?", "a": "Anti-HBc IgM."}, {"q": "HIV gp120 hangi reseptörlere bağlanır?", "a": "CD4 ve koreseptör CCR5 veya CXCR4."}, {"q": "EBV'nin B hücresine bağlandığı reseptör?", "a": "CD21 (CR2)."}, {"q": "İnfluenzada antijenik shift'in nedeni?", "a": "Segmentli genomun farklı suşlar arasında yeniden düzenlenmesi (reassortment)."}, {"q": "Kızamığa özgü enantem ve geç komplikasyon?", "a": "Koplik lekeleri; subakut sklerozan panensefalit (SSPE)."}]}, {"topic": "Mikoloji", "cards": [{"q": "C. albicans'ı tanımlayan hızlı test?", "a": "Germ tüp testi pozitif."}, {"q": "Çini mürekkebiyle kapsülü görülen maya?", "a": "Cryptococcus neoformans."}, {"q": "Dar açılı (45°) dallanan septalı hif hangi mantarı düşündürür?", "a": "Aspergillus."}, {"q": "Diyabetik ketoasidozda rinoserebral enfeksiyon yapan mantar?", "a": "Mucor/Rhizopus; geniş açılı septasız hif."}]}, {"topic": "Parazitoloji", "cards": [{"q": "Trofozoitinde fagosite edilmiş eritrosit bulunan protozoon?", "a": "Entamoeba histolytica."}, {"q": "Amip karaciğer apsesi içeriği nasıl tanımlanır?", "a": "Ançüez ezmesi görünümünde."}, {"q": "Hipnozoit oluşturan Plasmodium türleri ve tedavisi?", "a": "P. vivax ve P. ovale; primakin."}, {"q": "Enterobius vermicularis tanısında kullanılan yöntem?", "a": "Selofan bant (perianal) yöntemi."}, {"q": "Kist hidatik etkeni ve kesin konağı?", "a": "Echinococcus granulosus; köpek."}]}]}, {"subject": "Patoloji", "topics": [{"topic": "Hücre zedelenmesi", "cards": [{"q": "Geri dönüşümsüz hücre hasarının temel göstergeleri nelerdir?", "a": "Plazma/lizozom membran hasarı ve nükleer değişiklikler (piknoz, karyoreksis, karyoliz)."}, {"q": "Beyinde iskemik hasar sonrası görülen nekroz tipi?", "a": "Likefaksiyon nekrozu."}, {"q": "Tüberkülozda tipik nekroz tipi?", "a": "Kazeöz nekroz."}, {"q": "Apoptozun intrinsik yolunda mitokondriden salınıp kaspaz-9'u aktive eden molekül?", "a": "Sitokrom c (apoptozom oluşumu)."}]}, {"topic": "İnflamasyon", "cards": [{"q": "Akut inflamasyonun ilk 6-24 saatinde baskın hücre?", "a": "Nötrofil."}, {"q": "Lökositlerin endotele sıkı yapışmasını sağlayan endotel molekülleri?", "a": "ICAM-1 ve VCAM-1 (lökosit integrinleriyle)."}, {"q": "Granülomdaki epiteloid hücrelerin kökeni?", "a": "Aktive makrofajlar (IFN-γ etkisiyle)."}, {"q": "Kronik granülomatöz hastalıkta eksik enzim?", "a": "NADPH oksidaz."}, {"q": "Ateşe yol açan başlıca endojen pirojenler?", "a": "IL-1 ve TNF (hipotalamusta PGE2 artışı)."}]}, {"topic": "Hemodinamik bozukluklar", "cards": [{"q": "Virchow triadının bileşenleri?", "a": "Endotel hasarı, staz/türbülans, hiperkoagülabilite."}, {"q": "En sık kalıtsal trombofili nedeni?", "a": "Faktör V Leiden mutasyonu."}, {"q": "Trombüste Zahn çizgileri neyi gösterir?", "a": "Trombüsün akan kanda, antemortem oluştuğunu."}, {"q": "DIC'de tipik laboratuvar tablosu?", "a": "PT/aPTT uzun, D-dimer yüksek; trombosit ve fibrinojen düşük."}]}, {"topic": "Neoplazi", "cards": [{"q": "En sık mutasyona uğrayan tümör supresör gen?", "a": "TP53."}, {"q": "KML'de görülen translokasyon?", "a": "t(9;22) – Philadelphia kromozomu, BCR-ABL."}, {"q": "Burkitt lenfomada tipik translokasyon?", "a": "t(8;14) – MYC aktivasyonu."}, {"q": "Folliküler lenfomada translokasyon ve aşırı ifade edilen gen?", "a": "t(14;18) – BCL2 (anti-apoptotik)."}, {"q": "Psammom cisimciği görülen başlıca tümörler?", "a": "Papiller tiroid ca, seröz over ca, menenjiyom, mezotelyoma."}]}, {"topic": "Genetik hastalıklar", "cards": [{"q": "Marfan sendromunda etkilenen gen?", "a": "FBN1 (fibrillin-1), otozomal dominant."}, {"q": "Gaucher hastalığında eksik enzim?", "a": "Glukoserebrozidaz; buruşuk kâğıt görünümlü makrofajlar."}, {"q": "Tay-Sachs hastalığında eksik enzim ve göz bulgusu?", "a": "Heksozaminidaz A; makulada kiraz kırmızısı leke."}, {"q": "Frajil X sendromunun mekanizması?", "a": "FMR1 genindeki CGG tekrar genişlemesi."}]}, {"topic": "Kardiyovasküler patoloji", "cards": [{"q": "Aterosklerozun en erken makroskopik lezyonu?", "a": "Yağlı çizgilenme (fatty streak)."}, {"q": "Miyokard enfarktüsünde rüptür riskinin en yüksek olduğu dönem?", "a": "3-7. günler (makrofaj aracılı yıkım)."}, {"q": "Romatizmal kardite özgü lezyon?", "a": "Aschoff cisimciği (Anitschkow hücreleri)."}, {"q": "Kawasaki hastalığının en önemli komplikasyonu?", "a": "Koroner arter anevrizması."}]}, {"topic": "Sistemik patoloji", "cards": [{"q": "Barrett özofagusunda görülen değişiklik?", "a": "Skuamözden goblet hücreli intestinal kolumnar epitele metaplazi."}, {"q": "Çölyak hastalığında duodenal biyopsi bulguları?", "a": "Villus atrofisi, kript hiperplazisi, intraepitelyal lenfosit artışı."}, {"q": "Crohn hastalığının tipik histolojik özellikleri?", "a": "Transmural tutulum, atlamalı lezyonlar, nonkazeifiye granülom."}, {"q": "Klasik Hodgkin lenfomada Reed-Sternberg hücresi belirteçleri?", "a": "CD15+ ve CD30+ (CD45−)."}, {"q": "Minimal değişiklik hastalığında elektron mikroskopi bulgusu?", "a": "Podosit ayak çıkıntılarında silinme."}]}]}, {"subject": "Farmakoloji", "topics": [{"topic": "Farmakokinetik", "cards": [{"q": "Sıfırıncı derece kinetikle elimine edilen klasik ilaçlar?", "a": "Etanol, yüksek doz fenitoin ve aspirin."}, {"q": "Sabit dozda kararlı duruma ulaşma süresi?", "a": "Yaklaşık 4-5 yarılanma ömrü."}, {"q": "Başlıca CYP450 indükleyicileri?", "a": "Rifampisin, karbamazepin, fenitoin, fenobarbital, sarı kantaron."}, {"q": "Güçlü CYP3A4 inhibitörlerine örnek?", "a": "Ketokonazol, klaritromisin, ritonavir, greyfurt suyu."}]}, {"topic": "Otonom sinir sistemi", "cards": [{"q": "Organofosfat zehirlenmesinde antidotlar?", "a": "Atropin + pralidoksim."}, {"q": "Feokromositoma ameliyatı öncesi ilk verilecek ilaç?", "a": "Fenoksibenzamin (önce alfa, sonra beta blokaj)."}, {"q": "Anafilaksinin ilk basamak tedavisi?", "a": "İntramüsküler adrenalin."}, {"q": "Aköz hümör yapımını azaltan topikal beta bloker?", "a": "Timolol."}, {"q": "Malign hipertermi tedavisi?", "a": "Dantrolen (RyR1 üzerinden Ca salınımını inhibe eder)."}]}, {"topic": "Kardiyovasküler ilaçlar", "cards": [{"q": "ACE inhibitörüne bağlı öksürüğün nedeni?", "a": "Bradikinin birikimi."}, {"q": "Digoksinin etki mekanizması?", "a": "Na⁺/K⁺-ATPaz inhibisyonu → hücre içi Ca artışı."}, {"q": "Digoksin toksisitesini kolaylaştıran elektrolit bozukluğu?", "a": "Hipokalemi."}, {"q": "Statinlerin en önemli kas yan etkisi?", "a": "Miyopati/rabdomiyoliz."}, {"q": "Amiodaronun başlıca yan etkileri?", "a": "Pulmoner fibrozis, tiroid bozukluğu, hepatotoksisite, kornea depozitleri."}]}, {"topic": "Antimikrobiyaller", "cards": [{"q": "Aminoglikozidlerin başlıca yan etkileri?", "a": "Nefrotoksisite, ototoksisite, nöromusküler blokaj."}, {"q": "Vankomisinin etki mekanizması?", "a": "D-Ala-D-Ala ucuna bağlanarak hücre duvarı sentezini inhibe eder."}, {"q": "Kırmızı adam sendromuna yol açan durum?", "a": "Vankomisinin hızlı infüzyonu (histamin salınımı)."}, {"q": "İzoniazid nöropatisini önlemek için verilen vitamin?", "a": "Piridoksin (B6)."}, {"q": "Florokinolonlarla ilişkili kas-iskelet yan etkisi?", "a": "Tendinit/tendon rüptürü; çocuklarda kıkırdak hasarı."}]}, {"topic": "Santral sinir sistemi", "cards": [{"q": "Lityumun başlıca yan etkileri?", "a": "Tremor, hipotiroidi, nefrojenik DI; gebelikte Ebstein anomalisi."}, {"q": "Lityum düzeyini artıran ilaçlar?", "a": "Tiyazidler, NSAİİ'ler, ACE inhibitörleri."}, {"q": "Benzodiazepin zehirlenmesinin antidotu?", "a": "Flumazenil."}, {"q": "Gebelikte valproat kullanımının tipik riski?", "a": "Nöral tüp defekti."}, {"q": "Klozapinin hayatı tehdit eden yan etkisi?", "a": "Agranülositoz (kan sayımı izlemi gerekir)."}]}, {"topic": "Endokrin ilaçlar", "cards": [{"q": "Metforminin ciddi yan etkisi?", "a": "Laktik asidoz."}, {"q": "SGLT2 inhibitörlerinin tipik yan etkileri?", "a": "Genital mantar enfeksiyonu, öglisemik diyabetik ketoasidoz."}, {"q": "Gebeliğin ilk trimesterinde tercih edilen antitiroid ilaç?", "a": "Propiltiyourasil (sonra metimazole geçilir)."}, {"q": "Bisfosfonatların önemli yan etkileri?", "a": "Çene osteonekrozu, özofajit, atipik femur kırığı."}]}, {"topic": "Antikoagülanlar ve toksikoloji", "cards": [{"q": "Heparinin antidotu?", "a": "Protamin sülfat."}, {"q": "Varfarin etkisini geri çevirmek için kullanılanlar?", "a": "K vitamini; acilde protrombin kompleks konsantresi/TDP."}, {"q": "Parasetamol zehirlenmesinin antidotu?", "a": "N-asetilsistein."}, {"q": "Metanol veya etilen glikol zehirlenmesinde antidot?", "a": "Fomepizol (alkol dehidrogenaz inhibitörü)."}]}]}, {"subject": "Dahiliye", "topics": [{"topic": "Kardiyoloji", "cards": [{"q": "Akut perikarditin tipik EKG bulgusu nedir?", "a": "Yaygın konkav ST elevasyonu ve PR depresyonu."}, {"q": "Beck triadı hangi tabloyu düşündürür?", "a": "Kardiyak tamponad: hipotansiyon, juguler venöz dolgunluk, derinden gelen kalp sesleri."}, {"q": "Ciddi aort darlığının klasik semptom üçlüsü?", "a": "Angina, senkop ve kalp yetmezliği (efor dispnesi)."}, {"q": "HFrEF'te mortaliteyi azaltan temel ilaç grupları?", "a": "ARNI/ACE-i/ARB, beta bloker, MRA ve SGLT2 inhibitörü."}, {"q": "Kısa PR ve delta dalgası hangi sendromu gösterir?", "a": "Wolff-Parkinson-White sendromu (aksesuar yol)."}]}, {"topic": "Endokrinoloji", "cards": [{"q": "Primer hiperaldosteronizmde tarama testi?", "a": "Plazma aldosteron/renin oranı."}, {"q": "Cushing sendromunda ilk basamak tarama testleri?", "a": "1 mg gece deksametazon supresyon, gece tükürük kortizolü veya 24 saatlik idrar serbest kortizolü."}, {"q": "Feokromositoma ameliyat hazırlığında ilk başlanacak ilaç?", "a": "Alfa bloker (ör. fenoksibenzamin); beta bloker ancak alfa blokajdan sonra."}, {"q": "DKA'da insülin başlamadan önce mutlaka bakılması gereken elektrolit?", "a": "Potasyum; K <3,3 mEq/L ise önce potasyum replasmanı yapılır."}, {"q": "Graves hastalığına özgü bulgular?", "a": "Oftalmopati, pretibial miksödem ve tiroid akropakisi."}]}, {"topic": "Nefroloji", "cards": [{"q": "Erişkinde nefrotik düzey proteinüri eşiği?", "a": ">3,5 g/gün."}, {"q": "Erişkinde klasik olarak en sık primer nefrotik sendrom nedeni?", "a": "Membranöz nefropati (anti-PLA2R antikoru)."}, {"q": "Dünyada en sık görülen primer glomerülonefrit?", "a": "IgA nefropatisi."}, {"q": "Hiperkalemide kardiyak membranı stabilize eden ilk tedavi?", "a": "IV kalsiyum glukonat."}, {"q": "SIADH'nin laboratuvar tablosu?", "a": "Övolemik hiponatremi, düşük serum ozmolalitesi, uygunsuz yüksek idrar ozmolalitesi ve idrar Na."}]}, {"topic": "Gastroenteroloji", "cards": [{"q": "Çölyak hastalığında ilk tarama testi?", "a": "Doku transglutaminaz IgA (total IgA ile birlikte)."}, {"q": "Crohn hastalığının tutulum özelliği?", "a": "Ağızdan anüse atlamalı, transmural tutulum; en sık terminal ileum."}, {"q": "Sigaranın ülseratif kolit üzerine etkisi?", "a": "Koruyucudur; Crohn hastalığını ise kötüleştirir."}, {"q": "Wilson hastalığının kalıtımı ve sorumlu geni?", "a": "Otozomal resesif, ATP7B geni."}, {"q": "Herediter hemokromatozda en sık mutasyon?", "a": "HFE geninde C282Y homozigotluğu."}]}, {"topic": "Hematoloji", "cards": [{"q": "Demir eksikliğini en iyi gösteren tek test?", "a": "Düşük serum ferritin."}, {"q": "KML'nin karakteristik genetik anomalisi?", "a": "t(9;22) Philadelphia kromozomu, BCR-ABL füzyonu."}, {"q": "APL'nin translokasyonu ve hedefe yönelik tedavisi?", "a": "t(15;17) PML-RARA; ATRA ve arsenik trioksit."}, {"q": "Auer cisimcikleri hangi lösemiyi düşündürür?", "a": "AML (özellikle APL/M3)."}, {"q": "TTP'nin temel patogenezi?", "a": "ADAMTS13 eksikliği/inhibisyonu ile MAHA ve trombositopeni."}]}, {"topic": "Romatoloji", "cards": [{"q": "SLE için en spesifik otoantikorlar?", "a": "Anti-dsDNA ve anti-Smith."}, {"q": "İlaca bağlı lupusta tipik antikor?", "a": "Antihiston antikoru."}, {"q": "Akut gut atağında kullanılmayan ilaç?", "a": "Allopürinol akut atakta yeni başlanmaz; NSAİİ, kolşisin veya steroid verilir."}, {"q": "Behçet hastalığında paterji testi nasıl değerlendirilir?", "a": "Steril iğne batırma sonrası 24-48 saatte papül/püstül oluşursa pozitif."}]}, {"topic": "Göğüs Hastalıkları", "cards": [{"q": "Sarkoidozun klasik akciğer grafisi bulgusu?", "a": "Bilateral hiler lenfadenopati."}, {"q": "KOAH'ta sağkalımı artıran girişimler?", "a": "Sigarayı bırakma ve hipoksemide uzun süreli oksijen tedavisi."}, {"q": "Pulmoner emboli tanısında tercih edilen görüntüleme?", "a": "BT pulmoner anjiyografi."}]}]}, {"subject": "Pediatri", "topics": [{"topic": "Yenidoğan", "cards": [{"q": "APGAR skorunun beş parametresi?", "a": "Kalp hızı, solunum, kas tonusu, refleks irritabilite, renk."}, {"q": "Yenidoğan sarılığında her zaman patolojik kabul edilen durum?", "a": "İlk 24 saatte ortaya çıkan sarılık."}, {"q": "Prematüre RDS'nin nedeni ve grafi bulgusu?", "a": "Sürfaktan eksikliği; buzlu cam görünümü ve hava bronkogramı."}, {"q": "NEK'in patognomonik radyolojik bulgusu?", "a": "Pnömatozis intestinalis."}, {"q": "Yenidoğanda en sık abdominal kitle nedeni?", "a": "Böbrek kaynaklı (hidronefroz, multikistik displastik böbrek)."}]}, {"topic": "Büyüme-Gelişme", "cards": [{"q": "Doğum ağırlığı ne zaman iki, ne zaman üç katına çıkar?", "a": "Yaklaşık 4-5. ayda iki katı, 1 yaşta üç katı."}, {"q": "Ön fontanel ne zaman kapanır?", "a": "Genellikle 12-18 ay arasında."}, {"q": "Sosyal gülümseme kaçıncı haftada başlar?", "a": "Yaklaşık 6-8. hafta."}, {"q": "Desteksiz yürüme ortalama ne zaman başlar?", "a": "Yaklaşık 12. ay (12-15 ay normal)."}]}, {"topic": "Döküntülü Hastalıklar", "cards": [{"q": "Kızamık prodromunda patognomonik bulgu?", "a": "Koplik lekeleri (bukkal mukozada beyaz noktalar)."}, {"q": "'Tokat yemiş yanak' görünümü yapan etken?", "a": "Parvovirüs B19 (eritema infeksiyozum)."}, {"q": "Ateş düştükten sonra döküntünün çıktığı hastalık ve etkeni?", "a": "Roseola infantum; HHV-6."}, {"q": "Kızılın etkeni ve tipik bulguları?", "a": "A grubu beta hemolitik streptokok; çilek dil, zımpara kağıdı döküntü, Pastia çizgileri."}, {"q": "Kawasaki hastalığında tanı ve tedavi?", "a": "≥5 gün ateş + 5 kriterden 4'ü; IVIG ve aspirin (koroner anevrizma riski)."}]}, {"topic": "Pediatrik Kardiyoloji", "cards": [{"q": "En sık doğumsal kalp hastalığı?", "a": "Ventriküler septal defekt (VSD)."}, {"q": "Fallot tetralojisinin bileşenleri?", "a": "VSD, sağ ventrikül çıkım darlığı, ata binen aort, sağ ventrikül hipertrofisi."}, {"q": "Grafide 'çizme' ve 'ipe dizili yumurta' görünümü?", "a": "Çizme: Fallot tetralojisi; ipe dizili yumurta: büyük arter transpozisyonu."}, {"q": "Yenidoğanda en sık siyanotik kalp hastalığı?", "a": "Büyük arterlerin transpozisyonu (TGA)."}, {"q": "PDA'yı kapatan ve açık tutan ilaçlar?", "a": "Kapatmak: ibuprofen/indometazin (parasetamol); açık tutmak: PGE1."}]}, {"topic": "Metabolik-Genetik", "cards": [{"q": "Fenilketonüride eksik enzim ve tipik koku?", "a": "Fenilalanin hidroksilaz; küf/fare kokusu."}, {"q": "Akçaağaç şurubu idrar hastalığında biriken aminoasitler?", "a": "Dallı zincirli: lösin, izolösin, valin."}, {"q": "Down sendromunda en sık kalp anomalisi?", "a": "Atriyoventriküler septal defekt (endokardiyal yastık defekti)."}, {"q": "Turner sendromu karyotipi ve sık kalp anomalileri?", "a": "45,X; biküspit aort kapağı ve aort koarktasyonu."}]}, {"topic": "Gastro-Nefro", "cards": [{"q": "İnfantil hipertrofik pilor stenozunda metabolik tablo?", "a": "Hipokloremik hipokalemik metabolik alkaloz; safrasız fışkırır kusma."}, {"q": "İnvajinasyonun tipik yaşı ve dışkı bulgusu?", "a": "6 ay-3 yaş; frenk üzümü jölesi dışkı, sosis şeklinde kitle."}, {"q": "Çocuklarda en sık nefrotik sendrom nedeni?", "a": "Minimal değişiklik hastalığı; steroide iyi yanıt verir."}, {"q": "Post-streptokokal GN'de tipik laboratuvar?", "a": "Düşük C3, yüksek ASO; farenjitten 1-2 hafta sonra hematüri."}, {"q": "Çocuklarda tipik HÜS'ün en sık etkeni?", "a": "Shiga toksinli E. coli O157:H7."}]}, {"topic": "Hemato-Onkoloji", "cards": [{"q": "Çocukluk çağının en sık malignitesi?", "a": "Akut lenfoblastik lösemi (ALL)."}, {"q": "Çocuklarda en sık solid tümör?", "a": "SSS tümörleri; kafa dışı en sık solid tümör nöroblastom."}, {"q": "Nöroblastomu Wilms tümöründen ayıran bulgular?", "a": "Orta hattı geçer, kalsifikasyon içerir, idrarda VMA/HVA artar."}, {"q": "Çocukluk çağı akut ITP'nin tipik seyri?", "a": "Viral enfeksiyon sonrası izole trombositopeni; çoğu kendiliğinden düzelir."}]}]}, {"subject": "Genel Cerrahi", "topics": [{"topic": "Şok ve Sıvı", "cards": [{"q": "Hemorajik şokta ilk verilecek sıvı?", "a": "Isıtılmış izotonik kristaloid (en fazla 1 L), ardından erken kan ürünü."}, {"q": "Sınıf III hemorajik şokta kan kaybı oranı?", "a": "%30–40 (yaklaşık 1500–2000 mL)."}, {"q": "Nörojenik şokun klasik bulgu ikilisi?", "a": "Hipotansiyon + bradikardi (sıcak, kuru cilt)."}, {"q": "Masif transfüzyonda önerilen ES:TDP:trombosit oranı?", "a": "1:1:1."}]}, {"topic": "Travma", "cards": [{"q": "ATLS primer değerlendirme sırası?", "a": "ABCDE: havayolu (servikal koruma), solunum, dolaşım, nörolojik durum, açığa çıkarma."}, {"q": "Tansiyon pnömotoraksta ilk acil müdahale?", "a": "İğne dekompresyonu (erişkinde 4–5. interkostal aralık, orta aksiller hat), sonra tüp torakostomi."}, {"q": "Beck triadı neyi düşündürür?", "a": "Kardiyak tamponad: hipotansiyon, juguler venöz dolgunluk, derinden gelen kalp sesleri."}, {"q": "Künt batın travmasında en sık yaralanan solid organ?", "a": "Dalak."}]}, {"topic": "Yara ve Enfeksiyon", "cards": [{"q": "Proliferatif fazda ilk sentezlenen kollajen tipi?", "a": "Tip III kollajen (olgunlaşmada yerini tip I alır)."}, {"q": "Yara iyileşmesi için vazgeçilmez hücre?", "a": "Makrofaj."}, {"q": "Cerrahi alan enfeksiyonunun en sık etkeni?", "a": "Staphylococcus aureus."}, {"q": "Profilaktik antibiyotik ne zaman verilir?", "a": "İnsizyondan önceki 60 dakika içinde (genellikle sefazolin)."}]}, {"topic": "Özofagus ve Mide", "cards": [{"q": "Akalazyada baryumlu grafi görünümü?", "a": "Kuş gagası görünümü."}, {"q": "Akalazya tanısında altın standart?", "a": "Özofageal manometri (yüksek çözünürlüklü)."}, {"q": "Barrett özofagusunun histolojik tanımı?", "a": "Skuamöz epitelin goblet hücreli kolumnar epitele dönüşmesi (intestinal metaplazi)."}, {"q": "Virchow nodu nedir?", "a": "Sol supraklaviküler lenf nodu metastazı (sıklıkla mide kanseri)."}]}, {"topic": "Safra ve Pankreas", "cards": [{"q": "Charcot triadı?", "a": "Ateş, sarılık, sağ üst kadran ağrısı (akut kolanjit)."}, {"q": "Akut kolesistitte ilk tercih görüntüleme?", "a": "Ultrasonografi."}, {"q": "Akut pankreatitin en sık nedeni?", "a": "Safra taşı."}, {"q": "Ağrısız sarılık + ele gelen safra kesesi?", "a": "Courvoisier bulgusu; pankreas başı/periampuller tümör."}, {"q": "Pankreatitten >4 hafta sonra duvarla çevrili sıvı birikimi?", "a": "Psödokist."}]}, {"topic": "Kolon ve Apendiks", "cards": [{"q": "Akut apendisitte ağrının tipik seyri?", "a": "Periumbilikal başlar, sağ alt kadrana (McBurney) yerleşir."}, {"q": "Kolorektal kanser takibinde kullanılan belirteç?", "a": "CEA."}, {"q": "Kolon volvulusunun en sık yeri?", "a": "Sigmoid kolon."}, {"q": "Ailesel adenomatöz polipoziste sorumlu gen?", "a": "APC geni (kromozom 5q)."}]}, {"topic": "Herniler", "cards": [{"q": "İndirekt inguinal herni hangi damarlara göre çıkar?", "a": "İnferior epigastrik damarların lateralinden."}, {"q": "Hesselbach üçgeninden çıkan herni?", "a": "Direkt inguinal herni."}, {"q": "Strangülasyon riski en yüksek karın duvarı hernisi?", "a": "Femoral herni."}]}, {"topic": "Endokrin ve Meme", "cards": [{"q": "Tiroidin en sık malign tümörü?", "a": "Papiller karsinom."}, {"q": "Medüller tiroid kanserinin kaynağı ve belirteci?", "a": "Parafoliküler C hücresi; kalsitonin."}, {"q": "Klinik N0 meme kanserinde aksilla evrelemesi?", "a": "Sentinel lenf nodu biyopsisi."}, {"q": "Feokromositomada preoperatif ilk başlanan ilaç?", "a": "Alfa bloker (fenoksibenzamin); beta bloker ancak sonra eklenir."}]}]}, {"subject": "Kadın Doğum", "topics": [{"topic": "Gebelik Fizyolojisi", "cards": [{"q": "Gebelik testinde ölçülen plasental hormon?", "a": "β-hCG."}, {"q": "Serum β-hCG en yüksek düzeye ne zaman ulaşır?", "a": "Yaklaşık 8–10. gebelik haftası."}, {"q": "Naegele kuralı?", "a": "Son adet tarihine 7 gün ekle, 3 ay çıkar (1 yıl ekle)."}]}, {"topic": "Prenatal Tarama", "cards": [{"q": "İlk trimester kombine testinin bileşenleri?", "a": "Ense saydamlığı + serbest β-hCG + PAPP-A (11–14. hafta)."}, {"q": "Down sendromunda üçlü test profili?", "a": "AFP↓, uE3↓, hCG↑."}, {"q": "Nöral tüp defektinde artan serum belirteci?", "a": "Maternal serum AFP."}, {"q": "NTD önlemek için folik asit dozu?", "a": "0,4 mg/gün (önceki NTD öyküsünde 4 mg/gün), gebelikten en az 1 ay önce."}]}, {"topic": "Erken Gebelik Kanamaları", "cards": [{"q": "Ektopik gebeliğin en sık yerleşim yeri?", "a": "Tubanın ampuller bölümü."}, {"q": "Ektopikte metotreksatın kesin kontrendikasyonu?", "a": "Hemodinamik instabilite / rüptür bulgusu."}, {"q": "Komplet molün karyotipi?", "a": "Çoğunlukla 46,XX (tamamen paternal kökenli)."}, {"q": "Mol gebeliğin klasik USG görünümü?", "a": "Kar fırtınası (üzüm salkımı); fetus yok."}]}, {"topic": "Hipertansiyon ve GDM", "cards": [{"q": "Preeklampsi tanı kriteri?", "a": "20. haftadan sonra ≥140/90 mmHg + proteinüri veya uç organ bulgusu."}, {"q": "Eklampside nöbet önleme ve tedavide ilk ilaç?", "a": "Magnezyum sülfat."}, {"q": "Magnezyum toksisitesinde ilk kaybolan bulgu ve antidotu?", "a": "Patella refleksi; kalsiyum glukonat."}, {"q": "HELLP sendromunun bileşenleri?", "a": "Hemoliz, karaciğer enzim yüksekliği, trombositopeni."}, {"q": "Gestasyonel diyabet taraması ne zaman yapılır?", "a": "24–28. haftalar (75 g OGTT)."}]}, {"topic": "Doğum ve Postpartum", "cards": [{"q": "Postpartum kanamanın en sık nedeni?", "a": "Uterin atoni."}, {"q": "Postpartum kanamada ilk basamak uterotonik?", "a": "Oksitosin."}, {"q": "Geç deselerasyon neyi gösterir?", "a": "Uteroplasental yetmezlik (fetal hipoksi)."}, {"q": "Antenatal kortikosteroid hangi haftalarda önerilir?", "a": "24–34. gebelik haftaları (erken doğum riskinde)."}]}, {"topic": "Geç Gebelik Kanamaları", "cards": [{"q": "Ağrısız, parlak kırmızı vajinal kanama?", "a": "Plasenta previa."}, {"q": "Plasenta previa şüphesinde kaçınılması gereken?", "a": "Parmakla vajinal muayene."}, {"q": "Ağrılı kanama ve sert, hassas uterus?", "a": "Plasenta dekolmanı (ablasyo plasenta)."}, {"q": "Plasenta akretanın en önemli risk faktörü?", "a": "Önceki sezaryen + plasenta previa birlikteliği."}]}, {"topic": "Jinekolojik Onkoloji", "cards": [{"q": "Serviks kanserinin temel etiyolojik etkeni?", "a": "Yüksek riskli HPV (özellikle tip 16 ve 18)."}, {"q": "Endometrium kanserinin en sık semptomu?", "a": "Postmenopozal kanama."}, {"q": "Epitelyal over kanserinde izlenen belirteç?", "a": "CA-125."}, {"q": "Disgerminomda yükselen belirteç?", "a": "LDH."}, {"q": "Reprodüktif çağda en sık over neoplazmı?", "a": "Matür kistik teratom (dermoid kist)."}]}, {"topic": "Endokrinoloji ve İnfertilite", "cards": [{"q": "PKOS Rotterdam kriterleri?", "a": "Oligo/anovulasyon, hiperandrojenizm, polikistik over görünümü; 3 kriterden 2'si."}, {"q": "Sekonder amenorenin en sık nedeni?", "a": "Gebelik."}, {"q": "Turner sendromunun karyotipi ve gonad bulgusu?", "a": "45,X; çizgi (streak) gonad, primer amenore."}]}]}];
+const SLUG={"Anatomi":"ana","Fizyoloji":"fiz","Biyokimya":"biy","Mikrobiyoloji":"mik","Patoloji":"pat","Farmakoloji":"far","Dahiliye":"dah","Pediatri":"ped","Genel Cerrahi":"gc","Kadın Doğum":"kd"};
+// flatten
+const CARDS=[],BY={};
+DECK.forEach((s,si)=>{const sl=SLUG[s.subject]||("s"+si);s.topics.forEach((t,ti)=>t.cards.forEach((c,ci)=>{const id=sl+"-"+ti+"-"+ci;const o={id,subj:s.subject,topic:t.topic,tk:sl+"-"+ti,q:c.q,a:c.a,ord:CARDS.length};CARDS.push(o);BY[id]=o;}))});
+const SUBJ=DECK.map(s=>s.subject);
+
+// ---------- FSRS-5 ----------
+const W=[0.40255,1.18385,3.173,15.69105,7.1949,0.5345,1.4604,0.0046,1.54575,0.1192,1.01925,1.9395,0.11,0.29605,2.2698,0.2315,2.9898,0.51655,0.6621];
+const DECAY=-0.5,FACTOR=19/81,RET=0.9,DAY=864e5;
+const clampD=d=>Math.min(10,Math.max(1,d));
+const R=(t,s)=>Math.pow(1+FACTOR*t/s,DECAY);
+const ivl=s=>Math.min(36500,Math.max(1,Math.round(s/FACTOR*(Math.pow(RET,1/DECAY)-1))));
+const D0=g=>clampD(W[4]-Math.exp(W[5]*(g-1))+1);
+function nextD(d,g){const dp=d+(-W[6]*(g-3))*(10-d)/9;return clampD(W[7]*D0(4)+(1-W[7])*dp)}
+function sRecall(d,s,r){return s*(Math.exp(W[8])*(11-d)*Math.pow(s,-W[9])*(Math.exp(W[10]*(1-r))-1)+1)}
+function sForget(d,s,r){return Math.min(s,W[11]*Math.pow(d,-W[12])*(Math.pow(s+1,W[13])-1)*Math.exp(W[14]*(1-r)))}
+function sShort(s,g){return s*Math.exp(W[17]*(g-3+W[18]))}
+// grade: 1=Again(X) 3=Good(✓)
+function schedule(st,g,now){
+ st=st?{...st}:null;
+ if(!st){st={s:W[g-1],d:D0(g),reps:0,lapses:0,state:0}}
+ else{
+  const el=Math.max(0,(now-st.last)/DAY);
+  if(st.state===2&&el>=0.5){const r=R(el,st.s);st.s=g===1?sForget(st.d,st.s,r):sRecall(st.d,st.s,r)}
+  else st.s=sShort(st.s,g);
+  st.d=nextD(st.d,g);
+ }
+ st.s=Math.max(0.1,st.s);st.reps++;st.last=now;
+ if(g===1){if(st.state===2)st.lapses++;st.state=1;st.due=now+60e3*(st.state===1?5:5)}
+ else{st.state=2;const iv=ivl(st.s);st.ivl=iv;st.due=dayStart(now)+iv*DAY+4*36e5}
+ return st;
+}
+
+// ---------- storage ----------
+const KEY="tuskart_v1";
+let S=load();
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.cards)return x}catch(e){}return{cfg:null,cards:{},log:{},subj:SUBJ.slice(),newDone:{}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function dayStart(t){const d=new Date(t);if(d.getHours()<4)d.setDate(d.getDate()-1);d.setHours(0,0,0,0);return d.getTime()}
+function dkey(t){const d=new Date(dayStart(t||Date.now()));return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+const endToday=()=>dayStart(Date.now())+DAY+4*36e5;
+
+// ---------- planning ----------
+function daysLeft(){if(!S.cfg)return 0;const ex=new Date(S.cfg.exam+"T09:00").getTime();return Math.max(0,Math.ceil((ex-dayStart(Date.now()))/DAY))}
+function activeCards(){return CARDS.filter(c=>S.subj.includes(c.subj))}
+function plan(){
+ const unseen=activeCards().filter(c=>!S.cards[c.id]).length;
+ const base=unseen+(S.newDone[dkey()]||0); // bugün açılanlar dahil: gün içinde sabit kalsın
+ const dl=daysLeft();const usable=Math.max(1,dl-10); // bitir: sınavdan ~10 gün önce, son günler tekrar
+ const need=Math.ceil(base/usable);
+ const cap=Math.max(3,Math.round((S.cfg?S.cfg.min:30)*1.2)); // ~6 tekrar/dk, yeni kart ≈5 tekrar
+ const daily=base?Math.min(cap,Math.max(need,10)):0; // en az 10/gün (süre yetiyorsa)
+ return{unseen,dl,need,cap,daily,short:need>cap};
+}
+function todayNewLeft(){const p=plan();return Math.max(0,p.daily-(S.newDone[dkey()]||0))}
+function dueCards(){const e=endToday();return activeCards().filter(c=>{const st=S.cards[c.id];return st&&st.due<=e})}
+
+// ---------- session ----------
+let Q=null; // {blocks:[{tk,ids:[]}], bi, li, revealed, res:{}, again:[] , total, done}
+function buildQueue(extraNew){
+ const due=dueCards().sort((a,b)=>S.cards[a.id].due-S.cards[b.id].due);
+ const nl=extraNew!=null?extraNew:todayNewLeft();
+ const nw=activeCards().filter(c=>!S.cards[c.id]).slice(0,nl);
+ const map=new Map();
+ // tekrarlar önce, sonra yeni; konu içinde deste sırası
+ [...due,...nw].forEach(c=>{if(!map.has(c.tk))map.set(c.tk,[]);map.get(c.tk).push(c.id)});
+ const blocks=[...map.entries()].map(([tk,ids])=>({tk,ids:ids.sort((a,b)=>BY[a].ord-BY[b].ord)}));
+ return{blocks,bi:0,li:0,revealed:false,res:{},total:due.length+nw.length,done:0,newIds:new Set(nw.map(c=>c.id))};
+}
+function startSession(extra){Q=buildQueue(extra);if(!Q.total){toast("Şu an çalışılacak kart yok 🎉");return}view="study";render()}
+function curId(){const b=Q.blocks[Q.bi];return b&&b.ids[Q.li]}
+function grade(g){
+ const id=curId();if(!id)return;const now=Date.now();
+ const wasNew=!S.cards[id];
+ S.cards[id]=schedule(S.cards[id],g,now);
+ const k=dkey(now);S.log[k]=S.log[k]||{n:0,ok:0,new:0,ms:0};S.log[k].n++;if(g===3)S.log[k].ok++;
+ if(wasNew){S.log[k].new++;S.newDone[k]=(S.newDone[k]||0)+1}
+ const b=Q.blocks[Q.bi];
+ Q.res[b.tk+"|"+id]=g;
+ if(g===1){ // yanlış: oturum sonunda konusuyla tekrar
+  let last=Q.blocks[Q.blocks.length-1];
+  if(!last.again||last.tk!==b.tk){last={tk:b.tk,ids:[],again:true};Q.blocks.push(last)}
+  last.ids.push(id);Q.total++;
+ }
+ Q.done++;
+ save();
+ Q.li++;Q.revealed=false;
+ if(Q.li>=b.ids.length){Q.pendingNext=true}
+ render();
+}
+function nextBlock(){Q.pendingNext=false;Q.bi++;Q.li=0;Q.revealed=false;render();window.scrollTo(0,0)}
+
+// ---------- UI ----------
+let view=S.cfg?"home":"onboard";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+function toast(m){alert(m)}
+document.getElementById("nav").onclick=e=>{const b=e.target.closest("button");if(!b)return;view=b.dataset.v;render()};
+
+function render(){
+ const app=$("#app"),nav=$("#nav"),act=$("#act");
+ nav.classList.toggle("hide",view==="onboard"||view==="study");
+ nav.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===view));
+ act.classList.add("hide");
+ ({onboard,home,study,subjects,stats,settings}[view])(app);
+}
+
+function onboard(app,edit){
+ const c=S.cfg||{exam:"",min:30};
+ app.innerHTML=`<h1>TUS Kart</h1><p class="mut">Aralıklı tekrar (FSRS) ile TUS'un yüksek getirili bilgileri. Sınav tarihine ve günlük süreye göre her gün kaç yeni kart göreceğini hesaplarım.</p>
+ <div class="box"><label>Sınav tarihi</label><input type="date" id="ex" value="${c.exam}">
+ <label>Günde kaç dakika çalışacaksın?</label><input type="number" id="mn" min="5" max="600" step="5" value="${c.min}" inputmode="numeric">
+ <div id="pv" class="mut" style="margin-top:12px"></div></div>
+ <button class="btn" id="go">${edit?"Kaydet":"Başla"}</button>${edit?'<div style="height:10px"></div><button class="btn sec" id="cn">Vazgeç</button>':""}`;
+ const pv=()=>{const ex=$("#ex").value,mn=+$("#mn").value;if(!ex||!mn){$("#pv").textContent="";return}
+  const old=S.cfg;S.cfg={exam:ex,min:mn};const p=plan();S.cfg=old;
+  $("#pv").innerHTML=`Sınava <b>${p.dl}</b> gün · günde <b>${p.daily}</b> yeni kart${p.short?`<div class="warn">Bu sürede tüm kartları bitirmek için günde ~${p.need} yeni kart gerekir. Süreyi artırabilirsin.</div>`:""}`};
+ $("#ex").oninput=pv;$("#mn").oninput=pv;pv();
+ $("#go").onclick=()=>{const ex=$("#ex").value,mn=+$("#mn").value;if(!ex||!mn){alert("Tarih ve dakika gir.");return}S.cfg={exam:ex,min:mn};save();view="home";render()};
+ if(edit)$("#cn").onclick=()=>{view="settings";render()};
+}
+
+function home(app){
+ const p=plan(),due=dueCards().length,nl=todayNewLeft(),k=dkey(),lg=S.log[k]||{n:0,ok:0};
+ const seen=Object.keys(S.cards).length;
+ app.innerHTML=`<h1>Bugün</h1><p class="mut">Sınava ${p.dl} gün · ${S.subj.length===SUBJ.length?"tüm dersler":S.subj.length+" ders seçili"}</p>
+ <div class="big"><div><b>${due}</b><span>Tekrar</span></div><div><b>${nl}</b><span>Yeni</span></div><div><b>${lg.n}</b><span>Bugün çözülen</span></div></div>
+ <div style="height:14px"></div>
+ <button class="btn" id="st" ${due+nl?"":"disabled"}>${due+nl?"Çalışmaya başla":"Bugünlük bitti ✓"}</button>
+ ${due+nl?"":`<div style="height:10px"></div><button class="btn sec" id="ex" ${p.unseen?"":"disabled"}>+10 yeni kart (ekstra)</button>`}
+ ${p.short?`<div class="warn">Hedefe yetişmek için günde ~${p.need} yeni kart gerekir; şu an ${p.daily}. Ayarlar'dan süreyi artırabilirsin.</div>`:""}
+ <div class="box"><div class="row"><span>Genel ilerleme</span><span class="mut">${seen} / ${CARDS.length}</span></div><div class="bar"><i style="width:${seen/CARDS.length*100}%"></i></div>
+ <div class="row"><span class="mut">Bugünkü doğruluk</span><span>${lg.n?Math.round(lg.ok/lg.n*100)+"%":"–"}</span></div></div>
+ <p class="mut">İpucu: Kartı aç, cevabı içinden söyle, dokunarak göster, sonra ✕ ya da ✓.</p>`;
+ const b=$("#st");if(b)b.onclick=()=>startSession();
+ const e=$("#ex");if(e)e.onclick=()=>startSession(10);
+}
+
+function study(app){
+ const act=$("#act"),ai=$("#actin");
+ const b=Q.blocks[Q.bi];
+ if(!b){ // bitti
+  const k=dkey(),lg=S.log[k]||{n:0,ok:0};
+  app.innerHTML=`<h1>Tebrikler 🎉</h1><p class="mut">Oturum bitti.</p><div class="big"><div><b>${lg.n}</b><span>Bugün çözülen</span></div><div><b>${lg.n?Math.round(lg.ok/lg.n*100):0}%</b><span>Doğruluk</span></div></div><div style="height:14px"></div><button class="btn" id="hm">Ana sayfa</button>`;
+  $("#hm").onclick=()=>{Q=null;view="home";render()};return;
+ }
+ const c0=BY[b.ids[0]];
+ const pct=Math.round(Q.done/Q.total*100);
+ let h=`<div class="top"><button class="x" id="q">✕</button><div class="bar"><i style="width:${pct}%"></i></div><span class="mut">${Q.done}/${Q.total}</span></div>
+ <div class="subj">${esc(c0.subj)}</div><div class="topic">${esc(c0.topic)}${b.again?'<span class="tag">tekrar</span>':""}</div>`;
+ b.ids.forEach((id,i)=>{const c=BY[id];
+  if(i<Q.li||Q.pendingNext){const g=Q.res[b.tk+"|"+id];h+=`<div class="ln ${g===3?"ok":"bad"}"><div class="q">${esc(c.q)}</div><div class="a">${esc(c.a)}</div></div>`}
+  else if(i===Q.li){h+=`<div class="ln cur" id="cur"><div class="q">${esc(c.q)}${Q.newIds.has(id)&&!b.again?'<span class="tag">yeni</span>':""}</div><div class="a">${Q.revealed?esc(c.a):'<span class="dots">…</span>'}</div></div>`}
+  else h+=`<div class="ln hid"><div class="q">…</div></div>`;
+ });
+ h+=`<div style="height:110px"></div>`;
+ app.innerHTML=h;
+ $("#q").onclick=()=>{if(confirm("Oturumdan çık? İlerleme kaydedildi.")){Q=null;view="home";render()}};
+ act.classList.remove("hide");
+ if(Q.pendingNext){ai.innerHTML=`<button class="btn" id="nx">${Q.bi+1<Q.blocks.length?"Sonraki konu →":"Bitir"}</button>`;$("#nx").onclick=nextBlock}
+ else if(!Q.revealed){ai.innerHTML=`<button class="btn" id="rv">Cevabı göster</button>`;$("#rv").onclick=reveal;const cu=$("#cur");if(cu)cu.onclick=reveal}
+ else{ai.innerHTML=`<button class="gb no" id="no">✕</button><button class="gb yes" id="ys">✓</button>`;$("#no").onclick=()=>grade(1);$("#ys").onclick=()=>grade(3)}
+ const cu=$("#cur");if(cu)cu.scrollIntoView({block:"center",behavior:"smooth"});
+}
+function reveal(){Q.revealed=true;render()}
+document.addEventListener("keydown",e=>{if(view!=="study"||!Q)return;if(Q.pendingNext&&(e.key==="Enter"||e.key===" ")){nextBlock();return}if(!Q.revealed&&(e.key===" "||e.key==="Enter")){e.preventDefault();reveal()}else if(Q.revealed){if(e.key==="1"||e.key==="ArrowLeft")grade(1);if(e.key==="2"||e.key==="ArrowRight")grade(3)}});
+
+function subjStats(s){const cs=CARDS.filter(c=>c.subj===s);const seen=cs.filter(c=>S.cards[c.id]);const mature=seen.filter(c=>(S.cards[c.id].s||0)>=21);return{n:cs.length,seen:seen.length,mature:mature.length,due:cs.filter(c=>S.cards[c.id]&&S.cards[c.id].due<=endToday()).length}}
+function subjects(app){
+ let h=`<h1>Dersler</h1><p class="mut">Çalışmak istediğin dersleri seç. Günlük yeni kart sayısı seçime göre yeniden hesaplanır.</p>
+ <div class="chips" style="margin:12px 0"><button class="chip" id="all">Tümü</button><button class="chip" id="none">Hiçbiri</button></div><div class="box">`;
+ SUBJ.forEach(s=>{const st=subjStats(s),on=S.subj.includes(s);h+=`<div class="row"><button class="chip ${on?"on":""}" data-s="${esc(s)}">${on?"✓ ":""}${esc(s)}</button><span class="mut">${st.seen}/${st.n} · ${st.due} tekrar</span></div><div class="bar"><i style="width:${st.seen/st.n*100}%"></i></div>`});
+ h+=`</div>`;app.innerHTML=h;
+ app.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{const s=b.dataset.s;S.subj=S.subj.includes(s)?S.subj.filter(x=>x!==s):[...S.subj,s];save();render()});
+ $("#all").onclick=()=>{S.subj=SUBJ.slice();save();render()};
+ $("#none").onclick=()=>{S.subj=[];save();render()};
+}
+
+function stats(app){
+ const logs=S.log,keys=Object.keys(logs).sort();
+ let tn=0,tok=0;keys.forEach(k=>{tn+=logs[k].n;tok+=logs[k].ok});
+ // seri
+ let streak=0,d=Date.now();if(!logs[dkey(d)])d-=DAY;while(logs[dkey(d)]&&logs[dkey(d)].n){streak++;d-=DAY}
+ const seen=Object.values(S.cards),mature=seen.filter(x=>x.s>=21).length,lapses=seen.reduce((a,x)=>a+(x.lapses||0),0);
+ // 7 gün
+ const days=[];for(let i=6;i>=0;i--){const t=Date.now()-i*DAY,k=dkey(t);days.push({l:["Pz","Pt","Sa","Ça","Pe","Cu","Ct"][new Date(dayStart(t)).getDay()],n:(logs[k]||{}).n||0})}
+ const mx=Math.max(1,...days.map(x=>x.n));
+ // önümüzdeki 7 gün yük
+ let fut=[];for(let i=1;i<=7;i++){const e=endToday()+(i-1)*DAY,s=e-DAY;fut.push(seen.filter(x=>x.due>s&&x.due<=e).length)}
+ let h=`<h1>İstatistik</h1>
+ <div class="big"><div><b>${streak}</b><span>Gün seri</span></div><div><b>${tn?Math.round(tok/tn*100):0}%</b><span>Doğruluk</span></div><div><b>${tn}</b><span>Toplam cevap</span></div></div>
+ <div class="box"><b>Son 7 gün</b><div class="week">${days.map(x=>`<div><i style="height:${x.n/mx*60}px"></i>${x.n}<br>${x.l}</div>`).join("")}</div></div>
+ <div class="box"><div class="row"><span>Görülen kart</span><b>${seen.length} / ${CARDS.length}</b></div>
+ <div class="row"><span>Kalıcı (≥21 gün)</span><b>${mature}</b></div>
+ <div class="row"><span>Unutma (lapse)</span><b>${lapses}</b></div>
+ <div class="row"><span>Önümüzdeki 7 gün tekrar</span><b>${fut.join(" · ")}</b></div></div>
+ <h2>Ders bazında</h2><div class="box">`;
+ SUBJ.forEach(s=>{const st=subjStats(s);h+=`<div class="row"><span>${esc(s)}</span><span class="mut">${st.seen}/${st.n} · kalıcı ${st.mature}</span></div><div class="bar"><i style="width:${st.seen/st.n*100}%"></i></div>`});
+ app.innerHTML=h+"</div>";
+}
+
+function settings(app){
+ const p=plan();
+ app.innerHTML=`<h1>Ayarlar</h1>
+ <div class="box"><div class="row"><span>Sınav tarihi</span><b>${S.cfg.exam.split("-").reverse().join(".")}</b></div><div class="row"><span>Günlük süre</span><b>${S.cfg.min} dk</b></div><div class="row"><span>Günlük yeni kart</span><b>${p.daily}</b></div><div style="height:10px"></div><button class="btn sec" id="ed">Değiştir</button></div>
+ <div class="box"><b>Yedek</b><p class="mut">İlerleme bu cihazda (tarayıcıda) saklanır. Arada yedek al.</p>
+ <button class="btn sec" id="exp">Yedeği indir</button><div style="height:10px"></div>
+ <button class="btn sec" id="imp">Yedekten yükle</button><input type="file" id="fl" accept=".json,application/json" class="hide"></div>
+ <div class="box"><button class="btn sec" id="rs" style="color:var(--bad)">Tüm ilerlemeyi sıfırla</button></div>
+ <p class="mut">TUS Kart · ${CARDS.length} kart · FSRS-5 · özgün içerik</p>`;
+ $("#ed").onclick=()=>{view="onboard";render();onboard($("#app"),true)};
+ $("#exp").onclick=()=>{const blob=new Blob([JSON.stringify(S)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="tuskart-yedek-"+dkey()+".json";document.body.appendChild(a);a.click();a.remove()};
+ $("#imp").onclick=()=>$("#fl").click();
+ $("#fl").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x.cards)throw 0;if(confirm("Mevcut ilerlemenin üzerine yazılsın mı?")){S={...load(),...x};save();alert("Yüklendi ✓");render()}}catch(_){alert("Geçersiz yedek dosyası")}};r.readAsText(f)};
+ $("#rs").onclick=()=>{if(confirm("Tüm ilerleme silinecek. Emin misin?")){const cfg=S.cfg;S=load();S.cards={};S.log={};S.newDone={};S.cfg=cfg;save();render()}};
+}
+render();
+</script>
+</body>
+</html>
