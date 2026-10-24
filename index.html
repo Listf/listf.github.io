@@ -784,6 +784,15 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none;
       }
       .x-card.is-back { cursor: default; user-select: text; }
+      .x-card { position: relative; }
+      .x-star { position: absolute; top: 10px; right: 10px; width: 48px; height: 48px; border: 0; border-radius: 50%; background: transparent; font-size: 30px; line-height: 1; color: var(--text-secondary); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+      .x-star[aria-pressed="true"] { color: #f5b301; }
+      .x-star:active { transform: scale(0.9); }
+      .x-starlist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--stroke-secondary); }
+      .x-starlist li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--stroke-secondary); }
+      .x-starlist b { font: var(--type-body-strong); }
+      .x-starlist span { flex: 1; font: var(--type-small); color: var(--text-secondary); overflow-wrap: anywhere; }
+      .x-starlist button { flex: none; border: 0; background: transparent; font-size: 24px; color: #f5b301; width: 40px; height: 40px; cursor: pointer; }
       .x-word { font: var(--type-display); font-size: clamp(34px, 9vw, 48px); overflow-wrap: anywhere; }
       .x-back { display: grid; gap: 14px; justify-items: center; width: 100%; padding-top: 18px; border-top: 1px solid var(--stroke-primary); }
       .x-back[hidden] { display: none; }
@@ -953,6 +962,11 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             <button class="x-big x-big--ghost" type="button" data-more="10">+10 yeni kart çalış</button>
             <button class="x-big x-big--ghost" type="button" data-more="20">+20 yeni kart çalış</button>
           </div>
+          <div class="x-panel" id="star-wrap">
+            <div class="x-list-head"><h2>⭐ Yıldızlı kelimeler</h2><span class="x-count" id="star-count">0</span></div>
+            <p class="x-note" id="star-empty">Çalışırken kartın sağ üstündeki ☆ işaretine dokun, kelime buraya eklenir.</p>
+            <ul class="x-starlist" id="starlist"></ul>
+          </div>
           <div id="recent-wrap" hidden>
             <div class="x-list-head"><h2>Son çalışılanlar</h2><span class="x-count" id="recent-count"></span></div>
             <ul class="x-recent" id="recent"></ul>
@@ -991,6 +1005,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           <div id="study-body">
             <div class="x-studybar"><button class="x-undo" id="undo" type="button" disabled aria-label="Önceki karta dön ve puanı geri al">↶ Önceki</button></div>
             <div class="x-card" id="card" role="button" tabindex="0" aria-label="Kartı çevir">
+              <button class="x-star" id="star" type="button" aria-pressed="false" aria-label="Yıldızla">☆</button>
               <p class="x-word" id="c-front" lang="en"></p>
               <button class="x-peek" id="peek" type="button" aria-expanded="false" aria-controls="c-peek">💡 İpucu</button>
               <button class="x-peek" id="say" type="button" aria-label="Kelimeyi sesli oku">🔊 Dinle</button>
@@ -1380,6 +1395,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
               base = freshCard(id, c, true);
             }
             ["type", "step", "ivl", "ease", "due", "reps", "lapses", "added"].forEach(function (k) { if (c[k] != null) base[k] = c[k]; });
+            if (c.star) base.star = true;
             if (["new", "learning", "review"].indexOf(base.type) < 0) base.type = "new";
             seen[base.id] = 1; usedIds[base.id] = 1;
             cards.push(base);
@@ -1578,7 +1594,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           }).join("");
         }
         function renderHome() {
-          renderRecent();
+          renderRecent(); if (typeof renderStars === "function") renderStars();
           renderLetters();
           var k = counts();
           $("s-due").textContent = k.due; $("s-new").textContent = k.newLeft;
@@ -1673,6 +1689,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           renderCard(c);
         }
         function renderCard(c) {
+          if (typeof paintStar === "function") paintStar(c);
           var en = state.settings.dir === "en";
           $("c-front").textContent = en ? c.en : c.tr;
           $("say").hidden = !en; /* TR→EN: don't give the answer away before reveal */
@@ -1904,7 +1921,21 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         $("undo").addEventListener("click", undo);
         $("done-undo").addEventListener("click", undo);
         updateUndo();
-        $("card").addEventListener("click", function (e) { if (!e.target.closest("#speak, #peek, #c-peek, #say")) reveal(); });
+        $("card").addEventListener("click", function (e) { if (!e.target.closest("#speak, #peek, #c-peek, #say, #star")) reveal(); });
+        function paintStar(c) { var on = !!(c && c.star); $("star").setAttribute("aria-pressed", String(on)); $("star").textContent = on ? "★" : "☆"; $("star").setAttribute("aria-label", on ? "Yıldızı kaldır" : "Yıldızla"); }
+        $("star").addEventListener("click", function (e) {
+          e.stopPropagation();
+          var c = S && S.current && byId(S.current); if (!c) return;
+          c.star = !c.star; if (!c.star) delete c.star; save(); paintStar(c);
+          toast(c.star ? "⭐ Yıldızlılara eklendi" : "Yıldız kaldırıldı");
+        });
+        function renderStars() {
+          var list = state.cards.filter(function (c) { return c.star; }).sort(function (a, b) { return a.en.localeCompare(b.en, "en", { sensitivity: "base" }); });
+          $("star-count").textContent = String(list.length);
+          $("star-empty").hidden = list.length > 0;
+          $("starlist").innerHTML = list.map(function (c) { return '<li><b lang="en">' + esc(c.en) + "</b><span>" + esc(c.tr) + '</span><button type="button" data-unstar="' + esc(c.id) + '" aria-label="Yıldızı kaldır">★</button></li>'; }).join("");
+        }
+        $("starlist").addEventListener("click", function (e) { var b = e.target.closest("[data-unstar]"); if (!b) return; var c = byId(b.dataset.unstar); if (c) { delete c.star; save(); renderStars(); } });
         $("peek").addEventListener("click", function (e) {
           e.stopPropagation();
           var open = $("c-peek").hidden;
