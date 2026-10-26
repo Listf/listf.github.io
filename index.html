@@ -1937,7 +1937,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         function paintSyn(c) {
           var list = (c && c.syn || []).filter(function (w) { return deckIndex[wordKey(w)] != null; });
           $("c-syn").hidden = !list.length; $("c-syn-tr").hidden = true; $("c-syn-tr").textContent = "";
-          $("c-syn-list").innerHTML = list.map(function (w) { return '<button type="button" lang="en" aria-pressed="false" data-syn="' + esc(w) + '">' + esc(w) + "</button>"; }).join("");
+          $("c-syn-list").innerHTML = list.map(function (w, i) { return '<button type="button" lang="en" aria-pressed="false" data-syn="' + esc(w) + '">' + (i + 1) + ". " + esc(w) + "</button>"; }).join("");
         }
         $("c-syn").addEventListener("click", function (e) {
           e.stopPropagation();
