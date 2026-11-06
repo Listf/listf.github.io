@@ -757,7 +757,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
       .x-letters button:disabled { opacity: 0.35; cursor: default; }
       .x-letters-note { text-align: left; }
       @media (max-width: 430px) { .x-letters { grid-template-columns: repeat(4, 1fr); gap: 4px; } }
-      .x-more { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+      .x-more { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; }
       .x-more .x-big { min-height: 48px; font: var(--type-label); }
       .x-tabs {
         position: fixed; z-index: 20; left: 50%; transform: translateX(-50%);
@@ -964,6 +964,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           <button class="x-big" id="start" type="button">Çalışmaya Başla</button>
           <p class="x-note" id="start-note" hidden></p>
           <div class="x-more" role="group" aria-label="Bugün ek yeni kart">
+            <button class="x-big x-big--ghost" type="button" data-more="5">+5 yeni kart çalış</button>
             <button class="x-big x-big--ghost" type="button" data-more="10">+10 yeni kart çalış</button>
             <button class="x-big x-big--ghost" type="button" data-more="20">+20 yeni kart çalış</button>
           </div>
@@ -1060,6 +1061,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
               <div class="stat"><span class="stat__fig" id="d-3">0</span><span class="stat__label">Kolay</span></div>
             </section>
             <div class="x-more" role="group" aria-label="Bugün ek yeni kart">
+              <button class="x-big x-big--ghost" type="button" data-more="5">+5 yeni kart çalış</button>
               <button class="x-big x-big--ghost" type="button" data-more="10">+10 yeni kart çalış</button>
               <button class="x-big x-big--ghost" type="button" data-more="20">+20 yeni kart çalış</button>
             </div>
